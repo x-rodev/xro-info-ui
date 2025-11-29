@@ -1230,17 +1230,20 @@ function library:init()
                 Parent = objs.midBorder;
             })
             
-            -- Position label dynamically based on title width and available space
+            -- Position label dynamically to stay within bounds
             task.spawn(function()
                 task.wait(0.05) -- Wait for TextBounds to update
                 local titleWidth = objs.title.TextBounds.X
                 local urlWidth = objs.urlLabel.TextBounds.X
                 local totalWidth = objs.midBorder.Object.Size.X
-                local spacing = 20
+                local minSpacing = 30
                 
-                -- Position from right, ensuring it stays within bounds
-                local rightPos = math.max(titleWidth + spacing + 14, totalWidth - urlWidth - 14)
-                objs.urlLabel.Position = newUDim2(0, rightPos, 0, 2)
+                -- Calculate max position from left, ensuring it doesn't overflow
+                local maxLeftPos = totalWidth - urlWidth - 10
+                local desiredPos = titleWidth + minSpacing + 14
+                local finalPos = math.min(desiredPos, maxLeftPos)
+                
+                objs.urlLabel.Position = newUDim2(0, finalPos, 0, 2)
             end)
 
             objs.groupBackground = utility:Draw('Square', {
@@ -1784,7 +1787,7 @@ function library:init()
                             valueObject = {};
                             valueObject.background = utility:Draw('Square', {
                                 Size = newUDim2(1,-4,0,18);
-                                Color = Color3.new(.25,.25,.25);
+                                Color = Color3.new(.15,.15,.15);
                                 Transparency = 0;
                                 ZIndex = library.zindexOrder.dropdown+1;
                                 Parent = self.objects.background;
@@ -1909,6 +1912,11 @@ function library:init()
                             end
                         end)
                     end
+                end
+                
+                -- Update mobile toggle button text
+                if library.isMobile and self.mobileToggleText then
+                    self.mobileToggleText.Text = bool and 'X' or '\u2261'
                 end
             end
         end
@@ -2130,7 +2138,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(0,8,0,8);
                             Position = newUDim2(0,2,0,4);
-                            Color = fromrgb(0,0,0);
+                            ThemeColor = 'Option Background';
                             ZIndex = z+3;
                             Parent = objs.holder;
                         })
@@ -2193,11 +2201,8 @@ function library:init()
 
                             self.objects.border1.ThemeColor = bool and 'Accent' or (self.objects.holder.Hover and 'Accent' or 'Option Border 1');
                             self.objects.text.ThemeColor = bool and (self.risky and 'Risky Text Enabled' or 'Option Text 1') or (self.risky and 'Risky Text' or 'Option Text 3');
-                            if bool then
-                                self.objects.background.Color = fromrgb(45, 204, 45);
-                            else
-                                self.objects.background.Color = fromrgb(0,0,0);
-                            end
+                            self.objects.background.ThemeColor = bool and 'Accent' or 'Option Background';
+                            self.objects.background.ThemeColorOffset = bool and 0 or 0
 
                             if not nocallback then
                                 self.callback(bool);
@@ -2620,7 +2625,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,1,-8);
                             Position = newUDim2(0,2,0,4);
-                            Color = fromrgb(0,0,0);
+                            ThemeColor = 'Option Background';
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
@@ -2992,7 +2997,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,11);
                             Position = newUDim2(0,2,1,-14);
-                            Color = fromrgb(0,0,0);
+                            ThemeColor = 'Option Background';
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
@@ -3229,7 +3234,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,14);
                             Position = newUDim2(0,2,0,4);
-                            Color = fromrgb(0,0,0);
+                            ThemeColor = 'Option Background';
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
@@ -3794,7 +3799,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,15);
                             Position = newUDim2(0,2,1,-17);
-                            Color = fromrgb(0,0,0);
+                            ThemeColor = 'Option Background';
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
@@ -4192,7 +4197,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,15);
                             Position = newUDim2(0,2,1,-19);
-                            Color = fromrgb(0,0,0);
+                            ThemeColor = 'Option Background';
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
