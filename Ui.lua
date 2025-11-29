@@ -1348,7 +1348,7 @@ function library:init()
                 objs.mobileToggleText = utility:Draw('Text', {
                     Position = newUDim2(0.5, 0, 0.5, -6);
                     ThemeColor = 'Primary Text';
-                    Text = library.open and 'X' or '≡';
+                    Text = '≡';
                     Font = 2;
                     Size = 20;
                     ZIndex = library.zindexOrder.window + 101;
@@ -1357,9 +1357,17 @@ function library:init()
                     Parent = objs.mobileToggle;
                 })
 
+                window.mobileToggleText = objs.mobileToggleText;
+
                 utility:Connection(objs.mobileToggle.MouseButton1Down, function()
-                    library:SetOpen(not library.open)
-                    objs.mobileToggleText.Text = library.open and 'X' or '≡'
+                    if not library.opening then
+                        library:SetOpen(not library.open)
+                        task.spawn(function()
+                            library.opening = true;
+                            task.wait(.15);
+                            library.opening = false;
+                        end)
+                    end
                 end)
             end
 
