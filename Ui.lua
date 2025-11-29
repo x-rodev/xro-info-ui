@@ -97,7 +97,7 @@ library.themes = {
             ["Option Text 3"]             = fromrgb(255,255,255);
             ["Option Border 1"]           = fromrgb(50,50,50);
             ["Option Border 2"]           = fromrgb(0,0,0);
-            ["Option Background"]         = fromrgb(23,23,23);
+            ["Option Background"]         = fromrgb(0,0,0);
             ["Risky Text"]                = fromrgb(175, 21, 21);
             ["Risky Text Enabled"]        = fromrgb(255, 41, 41);
         }
@@ -1221,7 +1221,6 @@ function library:init()
             })
 
             objs.urlLabel = utility:Draw('Text', {
-                Position = newUDim2(1,-7,0,2);
                 ThemeColor = 'Primary Text';
                 Text = 'discord.gg/x-ro';
                 Font = 2;
@@ -1230,7 +1229,19 @@ function library:init()
                 Outline = true;
                 Parent = objs.midBorder;
             })
-            objs.urlLabel.Position = newUDim2(1, -(objs.urlLabel.TextBounds.X + 7), 0, 2)
+            
+            -- Position label dynamically based on title width and available space
+            task.spawn(function()
+                task.wait(0.05) -- Wait for TextBounds to update
+                local titleWidth = objs.title.TextBounds.X
+                local urlWidth = objs.urlLabel.TextBounds.X
+                local totalWidth = objs.midBorder.Object.Size.X
+                local spacing = 20
+                
+                -- Position from right, ensuring it stays within bounds
+                local rightPos = math.max(titleWidth + spacing + 14, totalWidth - urlWidth - 14)
+                objs.urlLabel.Position = newUDim2(0, rightPos, 0, 2)
+            end)
 
             objs.groupBackground = utility:Draw('Square', {
                 Size = newUDim2(1,-16,1,-(16+23));
@@ -2119,7 +2130,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(0,8,0,8);
                             Position = newUDim2(0,2,0,4);
-                            ThemeColor = 'Option Background';
+                            Color = fromrgb(0,0,0);
                             ZIndex = z+3;
                             Parent = objs.holder;
                         })
@@ -2182,8 +2193,11 @@ function library:init()
 
                             self.objects.border1.ThemeColor = bool and 'Accent' or (self.objects.holder.Hover and 'Accent' or 'Option Border 1');
                             self.objects.text.ThemeColor = bool and (self.risky and 'Risky Text Enabled' or 'Option Text 1') or (self.risky and 'Risky Text' or 'Option Text 3');
-                            self.objects.background.ThemeColor = bool and 'Accent' or 'Option Background';
-                            self.objects.background.ThemeColorOffset = bool and -55 or 0
+                            if bool then
+                                self.objects.background.Color = fromrgb(45, 204, 45);
+                            else
+                                self.objects.background.Color = fromrgb(0,0,0);
+                            end
 
                             if not nocallback then
                                 self.callback(bool);
@@ -2603,22 +2617,20 @@ function library:init()
                                 Parent = toggle.objects.holder;
                             })
 
-                            objs.background = utility:Draw('Square', {
-                                Size = newUDim2(1,-4,1,-8);
-                                Position = newUDim2(0,2,0,4);
-                                ThemeColor = 'Option Background';
-                                ZIndex = z+2;
-                                Parent = objs.holder;
-                            })
+                        objs.background = utility:Draw('Square', {
+                            Size = newUDim2(1,-4,1,-8);
+                            Position = newUDim2(0,2,0,4);
+                            Color = fromrgb(0,0,0);
+                            ZIndex = z+2;
+                            Parent = objs.holder;
+                        })
 
-                            objs.slider = utility:Draw('Square', {
-                                Size = newUDim2(0,0,1,0);
-                                ThemeColor = 'Accent';
-                                ZIndex = z+3;
-                                Parent = objs.background;
-                            })
-
-                            objs.border1 = utility:Draw('Square', {
+                        objs.slider = utility:Draw('Square', {
+                            Size = newUDim2(0,0,1,0);
+                            ThemeColor = 'Accent';
+                            ZIndex = z+3;
+                            Parent = objs.background;
+                        })                            objs.border1 = utility:Draw('Square', {
                                 Size = newUDim2(1,2,1,2);
                                 Position = newUDim2(0,-1,0,-1);
                                 ThemeColor = 'Option Border 1';
@@ -2980,7 +2992,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,11);
                             Position = newUDim2(0,2,1,-14);
-                            ThemeColor = 'Option Background';
+                            Color = fromrgb(0,0,0);
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
@@ -3217,7 +3229,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,14);
                             Position = newUDim2(0,2,0,4);
-                            ThemeColor = 'Option Background';
+                            Color = fromrgb(0,0,0);
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
@@ -3782,7 +3794,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,15);
                             Position = newUDim2(0,2,1,-17);
-                            ThemeColor = 'Option Background';
+                            Color = fromrgb(0,0,0);
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
@@ -4180,7 +4192,7 @@ function library:init()
                         objs.background = utility:Draw('Square', {
                             Size = newUDim2(1,-4,0,15);
                             Position = newUDim2(0,2,1,-19);
-                            ThemeColor = 'Option Background';
+                            Color = fromrgb(0,0,0);
                             ZIndex = z+2;
                             Parent = objs.holder;
                         })
