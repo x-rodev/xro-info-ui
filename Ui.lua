@@ -3588,7 +3588,7 @@ end)
             dropdownListFrame.Size = UDim2.new(0, 396, 0, 0)
             dropdownListFrame.ClipsDescendants = true
             dropdownListFrame.Visible = false
-            dropdownListFrame.ZIndex = 10000
+            dropdownListFrame.ZIndex = 999999
 
             dropdownListCorner.CornerRadius = UDim.new(0, 2)
             dropdownListCorner.Name = "dropdownListCorner"
@@ -3599,8 +3599,8 @@ end)
             dropdownListBackground.AnchorPoint = Vector2.new(0.5, 0.5)
             dropdownListBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             dropdownListBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
-            dropdownListBackground.Size = UDim2.new(0, 394, 0, 0)
-            dropdownListBackground.ScrollBarThickness = 6
+            dropdownListBackground.Size = UDim2.new(0, 380, 0, 0)
+            dropdownListBackground.ScrollBarThickness = 8
             dropdownListBackground.BorderSizePixel = 0
             dropdownListBackground.ScrollBarImageColor3 = Color3.fromRGB(159, 115, 255)
             dropdownListBackground.ScrollBarImageTransparency = 0
@@ -3608,7 +3608,7 @@ end)
             dropdownListBackground.ScrollingEnabled = true
             dropdownListBackground.ElasticBehavior = Enum.ElasticBehavior.Never
             dropdownListBackground.ScrollingDirection = Enum.ScrollingDirection.Y
-            dropdownListBackground.ZIndex = 10001
+            dropdownListBackground.ZIndex = 999999
 
             dropdownListGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownListGradient.Rotation = 90
@@ -3718,13 +3718,13 @@ end)
                 optionButton.Name = "option_" .. option
                 optionButton.Parent = dropdownListBackground
                 optionButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-                optionButton.Size = UDim2.new(0, 394, 0, 20)
+                optionButton.Size = UDim2.new(0, 372, 0, 20)
                 optionButton.AutoButtonColor = false
                 optionButton.Font = Enum.Font.Code
                 optionButton.Text = option
                 optionButton.TextColor3 = option == default and Color3.fromRGB(159, 115, 255) or Color3.fromRGB(190, 190, 190)
                 optionButton.TextSize = 14.000
-                optionButton.ZIndex = 10002
+                optionButton.ZIndex = 999999
 
                 local optionCorner = Instance.new("UICorner")
                 optionCorner.CornerRadius = UDim.new(0, 2)
@@ -3810,13 +3810,13 @@ end)
                     optionButton.Name = "option_" .. option
                     optionButton.Parent = dropdownListBackground
                     optionButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-                    optionButton.Size = UDim2.new(0, 394, 0, 20)
+                    optionButton.Size = UDim2.new(0, 372, 0, 20)
                     optionButton.AutoButtonColor = false
                     optionButton.Font = Enum.Font.Code
                     optionButton.Text = option
                     optionButton.TextColor3 = Color3.fromRGB(190, 190, 190)
                     optionButton.TextSize = 14.000
-                    optionButton.ZIndex = 10002
+                    optionButton.ZIndex = 999999
 
                     local optionCorner = Instance.new("UICorner")
                     optionCorner.CornerRadius = UDim.new(0, 2)
