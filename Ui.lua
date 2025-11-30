@@ -3517,7 +3517,7 @@ end)
             dropdownFrame.BackgroundTransparency = 1.000
             dropdownFrame.ClipsDescendants = false
             dropdownFrame.Size = UDim2.new(0, 396, 0, 24)
-            dropdownFrame.ZIndex = 100
+            dropdownFrame.ZIndex = 5000
 
             dropdownButton.Name = "dropdownButton"
             dropdownButton.Parent = dropdownFrame
@@ -3528,7 +3528,7 @@ end)
             dropdownButton.Text = ""
             dropdownButton.TextColor3 = Color3.fromRGB(0, 0, 0)
             dropdownButton.TextSize = 14.000
-            dropdownButton.ZIndex = 2050
+            dropdownButton.ZIndex = 5001
 
             dropdownButtonCorner.CornerRadius = UDim.new(0, 2)
             dropdownButtonCorner.Name = "dropdownButtonCorner"
@@ -3540,7 +3540,7 @@ end)
             dropdownButtonBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             dropdownButtonBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
             dropdownButtonBackground.Size = UDim2.new(0, 394, 0, 22)
-            dropdownButtonBackground.ZIndex = 2051
+            dropdownButtonBackground.ZIndex = 5002
 
             dropdownButtonGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownButtonGradient.Rotation = 90
@@ -3563,7 +3563,7 @@ end)
             dropdownLabel.TextSize = 14.000
             dropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
             dropdownLabel.RichText = true
-            dropdownLabel.ZIndex = 2052
+            dropdownLabel.ZIndex = 5003
 
             dropdownLabelPadding.Name = "dropdownLabelPadding"
             dropdownLabelPadding.Parent = dropdownLabel
@@ -3579,7 +3579,7 @@ end)
             dropdownArrow.Text = "▼"
             dropdownArrow.TextColor3 = Color3.fromRGB(159, 115, 255)
             dropdownArrow.TextSize = 12.000
-            dropdownArrow.ZIndex = 2052
+            dropdownArrow.ZIndex = 5003
 
             dropdownListFrame.Name = "dropdownListFrame"
             dropdownListFrame.Parent = dropdownFrame
@@ -3588,7 +3588,7 @@ end)
             dropdownListFrame.Size = UDim2.new(0, 396, 0, 0)
             dropdownListFrame.ClipsDescendants = true
             dropdownListFrame.Visible = false
-            dropdownListFrame.ZIndex = 2000
+            dropdownListFrame.ZIndex = 10000
 
             dropdownListCorner.CornerRadius = UDim.new(0, 2)
             dropdownListCorner.Name = "dropdownListCorner"
@@ -3608,7 +3608,7 @@ end)
             dropdownListBackground.ScrollingEnabled = true
             dropdownListBackground.ElasticBehavior = Enum.ElasticBehavior.Never
             dropdownListBackground.ScrollingDirection = Enum.ScrollingDirection.Y
-            dropdownListBackground.ZIndex = 2001
+            dropdownListBackground.ZIndex = 10001
 
             dropdownListGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownListGradient.Rotation = 90
@@ -3688,9 +3688,27 @@ end)
                 end
             end
 
+            local clickStartPos = nil
+            local clickStartTime = 0
+            
             dropdownButton.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    toggleDropdown()
+                    clickStartPos = input.Position
+                    clickStartTime = tick()
+                end
+            end)
+            
+            dropdownButton.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    if clickStartPos then
+                        local dragDistance = (input.Position - clickStartPos).Magnitude
+                        local clickDuration = tick() - clickStartTime
+                        -- Only toggle if it's a click (not a drag/scroll)
+                        if dragDistance < 10 and clickDuration < 0.5 then
+                            toggleDropdown()
+                        end
+                        clickStartPos = nil
+                    end
                 end
             end)
 
@@ -3706,26 +3724,44 @@ end)
                 optionButton.Text = option
                 optionButton.TextColor3 = option == default and Color3.fromRGB(159, 115, 255) or Color3.fromRGB(190, 190, 190)
                 optionButton.TextSize = 14.000
-                optionButton.ZIndex = 2002
+                optionButton.ZIndex = 10002
 
                 local optionCorner = Instance.new("UICorner")
                 optionCorner.CornerRadius = UDim.new(0, 2)
                 optionCorner.Parent = optionButton
 
+                local optionClickStartPos = nil
+                local optionClickStartTime = 0
+                
                 optionButton.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        selectedValue = option
-                        dropdownLabel.Text = text .. ": " .. option
-                        
-                        for _, child in ipairs(dropdownListBackground:GetChildren()) do
-                            if child:IsA("TextButton") then
-                                child.TextColor3 = Color3.fromRGB(190, 190, 190)
+                        optionClickStartPos = input.Position
+                        optionClickStartTime = tick()
+                    end
+                end)
+                
+                optionButton.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        if optionClickStartPos then
+                            local dragDistance = (input.Position - optionClickStartPos).Magnitude
+                            local clickDuration = tick() - optionClickStartTime
+                            -- Only select if it's a click (not a scroll)
+                            if dragDistance < 10 and clickDuration < 0.5 then
+                                selectedValue = option
+                                dropdownLabel.Text = text .. ": " .. option
+                                
+                                for _, child in ipairs(dropdownListBackground:GetChildren()) do
+                                    if child:IsA("TextButton") then
+                                        child.TextColor3 = Color3.fromRGB(190, 190, 190)
+                                    end
+                                end
+                                optionButton.TextColor3 = Color3.fromRGB(159, 115, 255)
+                                
+                                callback(option)
+                                toggleDropdown()
                             end
+                            optionClickStartPos = nil
                         end
-                        optionButton.TextColor3 = Color3.fromRGB(159, 115, 255)
-                        
-                        callback(option)
-                        toggleDropdown()
                     end
                 end)
 
@@ -3780,26 +3816,44 @@ end)
                     optionButton.Text = option
                     optionButton.TextColor3 = Color3.fromRGB(190, 190, 190)
                     optionButton.TextSize = 14.000
-                    optionButton.ZIndex = 2002
+                    optionButton.ZIndex = 10002
 
                     local optionCorner = Instance.new("UICorner")
                     optionCorner.CornerRadius = UDim.new(0, 2)
                     optionCorner.Parent = optionButton
 
+                    local addOptClickStartPos = nil
+                    local addOptClickStartTime = 0
+                    
                     optionButton.InputBegan:Connect(function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                            selectedValue = option
-                            dropdownLabel.Text = text .. ": " .. option
-                            
-                            for _, child in ipairs(dropdownListBackground:GetChildren()) do
-                                if child:IsA("TextButton") then
-                                    child.TextColor3 = Color3.fromRGB(190, 190, 190)
+                            addOptClickStartPos = input.Position
+                            addOptClickStartTime = tick()
+                        end
+                    end)
+                    
+                    optionButton.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            if addOptClickStartPos then
+                                local dragDistance = (input.Position - addOptClickStartPos).Magnitude
+                                local clickDuration = tick() - addOptClickStartTime
+                                -- Only select if it's a click (not a scroll)
+                                if dragDistance < 10 and clickDuration < 0.5 then
+                                    selectedValue = option
+                                    dropdownLabel.Text = text .. ": " .. option
+                                    
+                                    for _, child in ipairs(dropdownListBackground:GetChildren()) do
+                                        if child:IsA("TextButton") then
+                                            child.TextColor3 = Color3.fromRGB(190, 190, 190)
+                                        end
+                                    end
+                                    optionButton.TextColor3 = Color3.fromRGB(159, 115, 255)
+                                    
+                                    callback(option)
+                                    toggleDropdown()
                                 end
+                                addOptClickStartPos = nil
                             end
-                            optionButton.TextColor3 = Color3.fromRGB(159, 115, 255)
-                            
-                            callback(option)
-                            toggleDropdown()
                         end
                     end)
 
