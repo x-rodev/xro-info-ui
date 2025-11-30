@@ -3630,10 +3630,16 @@ end)
             local selectedValue = default
 
             local function updateDropdownSize()
-                local itemCount = #dropdownListBackground:GetChildren() - 1
-                local totalHeight = math.min(itemCount * 22 + (itemCount - 1) * 2, 200)
-                dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, itemCount * 22 + (itemCount - 1) * 2)
-                return totalHeight
+                local itemCount = 0
+                for _, child in ipairs(dropdownListBackground:GetChildren()) do
+                    if child:IsA("TextButton") then
+                        itemCount = itemCount + 1
+                    end
+                end
+                local contentHeight = itemCount * 22 + math.max(0, itemCount - 1) * 2
+                local displayHeight = math.min(contentHeight, 200)
+                dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
+                return displayHeight, contentHeight
             end
 
             local function checkDropdownPosition()
@@ -3648,14 +3654,15 @@ end)
                 -- Calculate space below dropdown
                 local spaceBelow = screenSize.Y - (dropdownAbsPos.Y + dropdownAbsSize.Y)
                 
-                -- If less than 200px space below, expand upward
-                return spaceBelow < 200
+                -- If less than 220px space below, expand upward
+                return spaceBelow < 220
             end
 
             local function toggleDropdown()
                 isOpen = not isOpen
-                local targetHeight = isOpen and updateDropdownSize() or 0
-                local targetBgHeight = isOpen and math.min(updateDropdownSize(), 200) or 0
+                local displayHeight, contentHeight = updateDropdownSize()
+                local targetHeight = isOpen and displayHeight or 0
+                local targetBgHeight = isOpen and displayHeight or 0
                 
                 -- Determine direction to expand
                 local expandUpward = checkDropdownPosition()
@@ -3663,7 +3670,7 @@ end)
                 if isOpen then
                     if expandUpward then
                         -- Position dropdown list above the button
-                        dropdownListFrame.Position = UDim2.new(0, 0, 0, -(targetHeight + 4))
+                        dropdownListFrame.Position = UDim2.new(0, 0, 0, -(targetHeight + 6))
                     else
                         -- Position dropdown list below the button (default)
                         dropdownListFrame.Position = UDim2.new(0, 0, 0, 26)
@@ -3676,7 +3683,7 @@ end)
                 TweenService:Create(dropdownArrow, TweenTable["dropdown"], {Rotation = isOpen and 180 or 0}):Play()
                 
                 if not isOpen then
-                    wait(0.2)
+                    task.wait(0.2)
                     dropdownListFrame.Visible = false
                 end
             end
