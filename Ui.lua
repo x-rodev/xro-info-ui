@@ -1364,6 +1364,209 @@ end)
 
                 return ButtonFunctions
             end
+            --
+            function ButtonFunctions:AddColorPicker(defaultColor, colorCallback)
+                defaultColor = defaultColor or Color3.fromRGB(159, 115, 255)
+                colorCallback = colorCallback or function() end
+
+                local colorPreview = Instance.new("Frame")
+                local colorPreviewCorner = Instance.new("UICorner")
+
+                colorPreview.Name = "colorPreview"
+                colorPreview.Parent = buttonBackground
+                colorPreview.AnchorPoint = Vector2.new(1, 0.5)
+                colorPreview.BackgroundColor3 = defaultColor
+                colorPreview.Position = UDim2.new(1, -4, 0.5, 0)
+                colorPreview.Size = UDim2.new(0, 18, 0, 18)
+                colorPreview.ZIndex = 5
+
+                colorPreviewCorner.CornerRadius = UDim.new(0, 2)
+                colorPreviewCorner.Parent = colorPreview
+
+                local colorPickerFrame = Instance.new("Frame")
+                local colorPickerCorner = Instance.new("UICorner")
+                local colorPickerGradient = Instance.new("UIGradient")
+                local saturationFrame = Instance.new("Frame")
+                local saturationCorner = Instance.new("UICorner")
+                local hueSlider = Instance.new("Frame")
+                local hueSliderCorner = Instance.new("UICorner")
+
+                colorPickerFrame.Name = "colorPickerFrame"
+                colorPickerFrame.Parent = buttonFrame
+                colorPickerFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                colorPickerFrame.Position = UDim2.new(0, 0, 1, 2)
+                colorPickerFrame.Size = UDim2.new(0, 396, 0, 0)
+                colorPickerFrame.ClipsDescendants = true
+                colorPickerFrame.Visible = false
+                colorPickerFrame.ZIndex = 500
+
+                colorPickerCorner.CornerRadius = UDim.new(0, 2)
+                colorPickerCorner.Parent = colorPickerFrame
+
+                colorPickerGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
+                colorPickerGradient.Rotation = 90
+                colorPickerGradient.Parent = colorPickerFrame
+
+                saturationFrame.Name = "saturationFrame"
+                saturationFrame.Parent = colorPickerFrame
+                saturationFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                saturationFrame.Position = UDim2.new(0, 10, 0, 10)
+                saturationFrame.Size = UDim2.new(0, 340, 0, 140)
+                saturationFrame.ZIndex = 501
+
+                saturationCorner.CornerRadius = UDim.new(0, 2)
+                saturationCorner.Parent = saturationFrame
+
+                local satWhite = Instance.new("Frame")
+                satWhite.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                satWhite.Size = UDim2.new(1, 0, 1, 0)
+                satWhite.ZIndex = 502
+                satWhite.Parent = saturationFrame
+                local satWhiteCorner = Instance.new("UICorner")
+                satWhiteCorner.CornerRadius = UDim.new(0, 2)
+                satWhiteCorner.Parent = satWhite
+                local satWhiteGradient = Instance.new("UIGradient")
+                satWhiteGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}
+                satWhiteGradient.Rotation = 0
+                satWhiteGradient.Parent = satWhite
+
+                local satBlack = Instance.new("Frame")
+                satBlack.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                satBlack.Size = UDim2.new(1, 0, 1, 0)
+                satBlack.ZIndex = 503
+                satBlack.Parent = saturationFrame
+                local satBlackCorner = Instance.new("UICorner")
+                satBlackCorner.CornerRadius = UDim.new(0, 2)
+                satBlackCorner.Parent = satBlack
+                local satBlackGradient = Instance.new("UIGradient")
+                satBlackGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}
+                satBlackGradient.Rotation = 90
+                satBlackGradient.Parent = satBlack
+
+                local saturationButton = Instance.new("TextButton")
+                saturationButton.Parent = saturationFrame
+                saturationButton.BackgroundTransparency = 1
+                saturationButton.Size = UDim2.new(1, 0, 1, 0)
+                saturationButton.Text = ""
+                saturationButton.ZIndex = 504
+
+                hueSlider.Name = "hueSlider"
+                hueSlider.Parent = colorPickerFrame
+                hueSlider.Position = UDim2.new(0, 360, 0, 10)
+                hueSlider.Size = UDim2.new(0, 26, 0, 140)
+                hueSlider.ZIndex = 501
+
+                hueSliderCorner.CornerRadius = UDim.new(0, 2)
+                hueSliderCorner.Parent = hueSlider
+
+                local hueGradient = Instance.new("UIGradient")
+                hueGradient.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+                    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+                    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+                }
+                hueGradient.Rotation = 90
+                hueGradient.Parent = hueSlider
+
+                local hueSliderButton = Instance.new("TextButton")
+                hueSliderButton.Parent = hueSlider
+                hueSliderButton.BackgroundTransparency = 1
+                hueSliderButton.Size = UDim2.new(1, 0, 1, 0)
+                hueSliderButton.Text = ""
+                hueSliderButton.ZIndex = 502
+
+                local hue, sat, val = Color3.toHSV(defaultColor)
+                local selectedColor = defaultColor
+                local isOpen = false
+
+                local function updateColor()
+                    selectedColor = Color3.fromHSV(hue, sat, val)
+                    colorPreview.BackgroundColor3 = selectedColor
+                    saturationFrame.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    colorCallback(selectedColor)
+                end
+
+                local function togglePicker()
+                    isOpen = not isOpen
+                    colorPickerFrame.Visible = true
+                    local targetHeight = isOpen and 160 or 0
+                    TweenService:Create(colorPickerFrame, TweenTable["colorpicker"] or TweenInfo.new(0.2), {Size = UDim2.new(0, 396, 0, targetHeight)}):Play()
+                    if not isOpen then
+                        wait(0.2)
+                        colorPickerFrame.Visible = false
+                    end
+                end
+
+                colorPreview.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        togglePicker()
+                    end
+                end)
+
+                local hueDragging = false
+                hueSliderButton.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        hueDragging = true
+                        local function update()
+                            local mousePos = UserInputService:GetMouseLocation().Y
+                            local relativePos = math.clamp((mousePos - hueSlider.AbsolutePosition.Y) / hueSlider.AbsoluteSize.Y, 0, 1)
+                            hue = relativePos
+                            updateColor()
+                        end
+                        update()
+                        local moveConn
+                        moveConn = UserInputService.InputChanged:Connect(function(inp)
+                            if hueDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+                                update()
+                            end
+                        end)
+                        local releaseConn
+                        releaseConn = UserInputService.InputEnded:Connect(function(inp)
+                            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                                hueDragging = false
+                                moveConn:Disconnect()
+                                releaseConn:Disconnect()
+                            end
+                        end)
+                    end
+                end)
+
+                local satDragging = false
+                saturationButton.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        satDragging = true
+                        local function update()
+                            local mousePos = UserInputService:GetMouseLocation()
+                            local relativeX = math.clamp((mousePos.X - saturationFrame.AbsolutePosition.X) / saturationFrame.AbsoluteSize.X, 0, 1)
+                            local relativeY = math.clamp((mousePos.Y - saturationFrame.AbsolutePosition.Y) / saturationFrame.AbsoluteSize.Y, 0, 1)
+                            sat = relativeX
+                            val = 1 - relativeY
+                            updateColor()
+                        end
+                        update()
+                        local moveConn
+                        moveConn = UserInputService.InputChanged:Connect(function(inp)
+                            if satDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+                                update()
+                            end
+                        end)
+                        local releaseConn
+                        releaseConn = UserInputService.InputEnded:Connect(function(inp)
+                            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                                satDragging = false
+                                moveConn:Disconnect()
+                                releaseConn:Disconnect()
+                            end
+                        end)
+                    end
+                end)
+
+                return ButtonFunctions
+            end
             return ButtonFunctions
         end
         --
@@ -1799,32 +2002,195 @@ end)
 
                 local colorPreview = Instance.new("Frame")
                 local colorPreviewCorner = Instance.new("UICorner")
-                local colorButton = Instance.new("TextButton")
 
                 colorPreview.Name = "colorPreview"
                 colorPreview.Parent = Extras
                 colorPreview.BackgroundColor3 = defaultColor
                 colorPreview.Size = UDim2.new(0, 22, 0, 18)
+                colorPreview.ZIndex = 5
 
                 colorPreviewCorner.CornerRadius = UDim.new(0, 2)
                 colorPreviewCorner.Parent = colorPreview
 
-                colorButton.Name = "colorButton"
-                colorButton.Parent = colorPreview
-                colorButton.BackgroundTransparency = 1
-                colorButton.Size = UDim2.new(1, 0, 1, 0)
-                colorButton.Text = ""
-                colorButton.ZIndex = 5
+                local colorPickerFrame = Instance.new("Frame")
+                local colorPickerCorner = Instance.new("UICorner")
+                local colorPickerGradient = Instance.new("UIGradient")
+                local saturationFrame = Instance.new("Frame")
+                local saturationCorner = Instance.new("UICorner")
+                local hueSlider = Instance.new("Frame")
+                local hueSliderCorner = Instance.new("UICorner")
 
-                local colorPicker = Components:NewColorPicker(text .. " Color", defaultColor, function(color)
-                    colorPreview.BackgroundColor3 = color
-                    colorCallback(color)
+                colorPickerFrame.Name = "colorPickerFrame"
+                colorPickerFrame.Parent = toggleButton
+                colorPickerFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                colorPickerFrame.Position = UDim2.new(0, 0, 1, 2)
+                colorPickerFrame.Size = UDim2.new(0, 396, 0, 0)
+                colorPickerFrame.ClipsDescendants = true
+                colorPickerFrame.Visible = false
+                colorPickerFrame.ZIndex = 500
+
+                colorPickerCorner.CornerRadius = UDim.new(0, 2)
+                colorPickerCorner.Parent = colorPickerFrame
+
+                colorPickerGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
+                colorPickerGradient.Rotation = 90
+                colorPickerGradient.Parent = colorPickerFrame
+
+                saturationFrame.Name = "saturationFrame"
+                saturationFrame.Parent = colorPickerFrame
+                saturationFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                saturationFrame.Position = UDim2.new(0, 10, 0, 10)
+                saturationFrame.Size = UDim2.new(0, 340, 0, 140)
+                saturationFrame.ZIndex = 501
+
+                saturationCorner.CornerRadius = UDim.new(0, 2)
+                saturationCorner.Parent = saturationFrame
+
+                local satWhite = Instance.new("Frame")
+                satWhite.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                satWhite.Size = UDim2.new(1, 0, 1, 0)
+                satWhite.ZIndex = 502
+                satWhite.Parent = saturationFrame
+                local satWhiteCorner = Instance.new("UICorner")
+                satWhiteCorner.CornerRadius = UDim.new(0, 2)
+                satWhiteCorner.Parent = satWhite
+                local satWhiteGradient = Instance.new("UIGradient")
+                satWhiteGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}
+                satWhiteGradient.Rotation = 0
+                satWhiteGradient.Parent = satWhite
+
+                local satBlack = Instance.new("Frame")
+                satBlack.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                satBlack.Size = UDim2.new(1, 0, 1, 0)
+                satBlack.ZIndex = 503
+                satBlack.Parent = saturationFrame
+                local satBlackCorner = Instance.new("UICorner")
+                satBlackCorner.CornerRadius = UDim.new(0, 2)
+                satBlackCorner.Parent = satBlack
+                local satBlackGradient = Instance.new("UIGradient")
+                satBlackGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}
+                satBlackGradient.Rotation = 90
+                satBlackGradient.Parent = satBlack
+
+                local saturationButton = Instance.new("TextButton")
+                saturationButton.Parent = saturationFrame
+                saturationButton.BackgroundTransparency = 1
+                saturationButton.Size = UDim2.new(1, 0, 1, 0)
+                saturationButton.Text = ""
+                saturationButton.ZIndex = 504
+
+                hueSlider.Name = "hueSlider"
+                hueSlider.Parent = colorPickerFrame
+                hueSlider.Position = UDim2.new(0, 360, 0, 10)
+                hueSlider.Size = UDim2.new(0, 26, 0, 140)
+                hueSlider.ZIndex = 501
+
+                hueSliderCorner.CornerRadius = UDim.new(0, 2)
+                hueSliderCorner.Parent = hueSlider
+
+                local hueGradient = Instance.new("UIGradient")
+                hueGradient.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+                    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+                    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+                }
+                hueGradient.Rotation = 90
+                hueGradient.Parent = hueSlider
+
+                local hueSliderButton = Instance.new("TextButton")
+                hueSliderButton.Parent = hueSlider
+                hueSliderButton.BackgroundTransparency = 1
+                hueSliderButton.Size = UDim2.new(1, 0, 1, 0)
+                hueSliderButton.Text = ""
+                hueSliderButton.ZIndex = 502
+
+                local hue, sat, val = Color3.toHSV(defaultColor)
+                local selectedColor = defaultColor
+                local isOpen = false
+
+                local function updateColor()
+                    selectedColor = Color3.fromHSV(hue, sat, val)
+                    colorPreview.BackgroundColor3 = selectedColor
+                    saturationFrame.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+                    colorCallback(selectedColor)
+                end
+
+                local function togglePicker()
+                    isOpen = not isOpen
+                    colorPickerFrame.Visible = true
+                    local targetHeight = isOpen and 160 or 0
+                    TweenService:Create(colorPickerFrame, TweenTable["colorpicker"] or TweenInfo.new(0.2), {Size = UDim2.new(0, 396, 0, targetHeight)}):Play()
+                    if not isOpen then
+                        wait(0.2)
+                        colorPickerFrame.Visible = false
+                    end
+                end
+
+                colorPreview.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        togglePicker()
+                    end
                 end)
 
-                colorButton.InputBegan:Connect(function(input)
+                local hueDragging = false
+                hueSliderButton.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        -- Toggle the color picker
-                        local colorPickerFrame = colorPicker.GetFrame and colorPicker:GetFrame()
+                        hueDragging = true
+                        local function update()
+                            local mousePos = UserInputService:GetMouseLocation().Y
+                            local relativePos = math.clamp((mousePos - hueSlider.AbsolutePosition.Y) / hueSlider.AbsoluteSize.Y, 0, 1)
+                            hue = relativePos
+                            updateColor()
+                        end
+                        update()
+                        local moveConn
+                        moveConn = UserInputService.InputChanged:Connect(function(inp)
+                            if hueDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+                                update()
+                            end
+                        end)
+                        local releaseConn
+                        releaseConn = UserInputService.InputEnded:Connect(function(inp)
+                            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                                hueDragging = false
+                                moveConn:Disconnect()
+                                releaseConn:Disconnect()
+                            end
+                        end)
+                    end
+                end)
+
+                local satDragging = false
+                saturationButton.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        satDragging = true
+                        local function update()
+                            local mousePos = UserInputService:GetMouseLocation()
+                            local relativeX = math.clamp((mousePos.X - saturationFrame.AbsolutePosition.X) / saturationFrame.AbsoluteSize.X, 0, 1)
+                            local relativeY = math.clamp((mousePos.Y - saturationFrame.AbsolutePosition.Y) / saturationFrame.AbsoluteSize.Y, 0, 1)
+                            sat = relativeX
+                            val = 1 - relativeY
+                            updateColor()
+                        end
+                        update()
+                        local moveConn
+                        moveConn = UserInputService.InputChanged:Connect(function(inp)
+                            if satDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+                                update()
+                            end
+                        end)
+                        local releaseConn
+                        releaseConn = UserInputService.InputEnded:Connect(function(inp)
+                            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                                satDragging = false
+                                moveConn:Disconnect()
+                                releaseConn:Disconnect()
+                            end
+                        end)
                     end
                 end)
 
@@ -3162,6 +3528,7 @@ end)
             dropdownButton.Text = ""
             dropdownButton.TextColor3 = Color3.fromRGB(0, 0, 0)
             dropdownButton.TextSize = 14.000
+            dropdownButton.ZIndex = 150
 
             dropdownButtonCorner.CornerRadius = UDim.new(0, 2)
             dropdownButtonCorner.Name = "dropdownButtonCorner"
@@ -3173,6 +3540,7 @@ end)
             dropdownButtonBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             dropdownButtonBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
             dropdownButtonBackground.Size = UDim2.new(0, 394, 0, 22)
+            dropdownButtonBackground.ZIndex = 151
 
             dropdownButtonGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownButtonGradient.Rotation = 90
@@ -3195,6 +3563,7 @@ end)
             dropdownLabel.TextSize = 14.000
             dropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
             dropdownLabel.RichText = true
+            dropdownLabel.ZIndex = 152
 
             dropdownLabelPadding.Name = "dropdownLabelPadding"
             dropdownLabelPadding.Parent = dropdownLabel
@@ -3210,6 +3579,7 @@ end)
             dropdownArrow.Text = "▼"
             dropdownArrow.TextColor3 = Color3.fromRGB(159, 115, 255)
             dropdownArrow.TextSize = 12.000
+            dropdownArrow.ZIndex = 152
 
             dropdownListFrame.Name = "dropdownListFrame"
             dropdownListFrame.Parent = dropdownFrame
@@ -3218,7 +3588,7 @@ end)
             dropdownListFrame.Size = UDim2.new(0, 396, 0, 0)
             dropdownListFrame.ClipsDescendants = true
             dropdownListFrame.Visible = false
-            dropdownListFrame.ZIndex = 150
+            dropdownListFrame.ZIndex = 500
 
             dropdownListCorner.CornerRadius = UDim.new(0, 2)
             dropdownListCorner.Name = "dropdownListCorner"
@@ -3234,7 +3604,7 @@ end)
             dropdownListBackground.BorderSizePixel = 0
             dropdownListBackground.ScrollBarImageColor3 = Color3.fromRGB(159, 115, 255)
             dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, 0)
-            dropdownListBackground.ZIndex = 150
+            dropdownListBackground.ZIndex = 501
 
             dropdownListGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownListGradient.Rotation = 90
@@ -3296,7 +3666,7 @@ end)
                 optionButton.Text = option
                 optionButton.TextColor3 = option == default and Color3.fromRGB(159, 115, 255) or Color3.fromRGB(190, 190, 190)
                 optionButton.TextSize = 14.000
-                optionButton.ZIndex = 200
+                optionButton.ZIndex = 502
 
                 local optionCorner = Instance.new("UICorner")
                 optionCorner.CornerRadius = UDim.new(0, 2)
@@ -3549,8 +3919,8 @@ end)
             satWhiteCorner.CornerRadius = UDim.new(0, 2)
             satWhiteCorner.Parent = satWhite
             local satWhiteGradient = Instance.new("UIGradient")
-            satWhiteGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)}
-            satWhiteGradient.Rotation = 90
+            satWhiteGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}
+            satWhiteGradient.Rotation = 0
             satWhiteGradient.Parent = satWhite
 
             local satBlack = Instance.new("Frame")
@@ -3564,6 +3934,7 @@ end)
             satBlackCorner.Parent = satBlack
             local satBlackGradient = Instance.new("UIGradient")
             satBlackGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}
+            satBlackGradient.Rotation = 90
             satBlackGradient.Parent = satBlack
 
             saturationButton.Name = "saturationButton"
