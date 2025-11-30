@@ -3588,7 +3588,7 @@ end)
             dropdownListFrame.Size = UDim2.new(0, 396, 0, 0)
             dropdownListFrame.ClipsDescendants = true
             dropdownListFrame.Visible = false
-            dropdownListFrame.ZIndex = 500
+            dropdownListFrame.ZIndex = 1000
 
             dropdownListCorner.CornerRadius = UDim.new(0, 2)
             dropdownListCorner.Name = "dropdownListCorner"
@@ -3604,7 +3604,7 @@ end)
             dropdownListBackground.BorderSizePixel = 0
             dropdownListBackground.ScrollBarImageColor3 = Color3.fromRGB(159, 115, 255)
             dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, 0)
-            dropdownListBackground.ZIndex = 501
+            dropdownListBackground.ZIndex = 1001
 
             dropdownListGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownListGradient.Rotation = 90
@@ -3666,7 +3666,7 @@ end)
                 optionButton.Text = option
                 optionButton.TextColor3 = option == default and Color3.fromRGB(159, 115, 255) or Color3.fromRGB(190, 190, 190)
                 optionButton.TextSize = 14.000
-                optionButton.ZIndex = 502
+                optionButton.ZIndex = 1002
 
                 local optionCorner = Instance.new("UICorner")
                 optionCorner.CornerRadius = UDim.new(0, 2)
@@ -3740,7 +3740,7 @@ end)
                     optionButton.Text = option
                     optionButton.TextColor3 = Color3.fromRGB(190, 190, 190)
                     optionButton.TextSize = 14.000
-                    optionButton.ZIndex = 11
+                    optionButton.ZIndex = 1002
 
                     local optionCorner = Instance.new("UICorner")
                     optionCorner.CornerRadius = UDim.new(0, 2)
