@@ -746,11 +746,11 @@ function library:Init(key)
     toggleButton.AnchorPoint = Vector2.new(0, 0)
     toggleButton.BackgroundColor3 = Color3.fromRGB(159, 115, 255)
     toggleButton.Position = UDim2.new(0, 10, 0, 10)
-    toggleButton.Size = UDim2.new(0, isMobile and 60 or 50, 0, isMobile and 60 or 50)
+    toggleButton.Size = UDim2.new(0, 50, 0, 50)
     toggleButton.Font = Enum.Font.Code
     toggleButton.Text = "☰"
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.TextSize = isMobile and 28 or 24
+    toggleButton.TextSize = 24
     toggleButton.ZIndex = 1000
     
     toggleButtonCorner.CornerRadius = UDim.new(0, 8)
@@ -846,7 +846,7 @@ function library:Init(key)
     barLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     barLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-    local tabWidth = isMobile and 80 or 152
+    local tabWidth = isMobile and 100 or 152
     local containerWidth = uiWidth - 2 - tabWidth - 10
     
     tabButtonsEdge.Name = "tabButtonsEdge"
