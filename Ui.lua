@@ -31,7 +31,7 @@ local CreateTween = function(name, speed, style, direction, loop, reverse, delay
     TweenTable[name] = TweenInfo.new(speed, style, direction, loop, reverse, delay)
 end
 
--- / Dragging (Mobile & PC Compatible)
+-- / Dragging
 local drag = function(obj, latency)
     obj = obj
     latency = latency or 0.06
@@ -48,7 +48,6 @@ local drag = function(obj, latency)
     end
 
     obj.InputBegan:Connect(function(inp)
-        -- Support both mouse and touch input
         if (inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch) then
             toggled = true
             start = inp.Position
@@ -62,7 +61,6 @@ local drag = function(obj, latency)
     end)
 
     obj.InputChanged:Connect(function(inp)
-        -- Support both mouse movement and touch movement
         if (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
             input = inp
         end
@@ -682,12 +680,6 @@ function library:Init(key)
     local title = library.title
     key = key or Enum.KeyCode.RightAlt
 
-    -- Detect if mobile device and calculate responsive size
-    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-    local viewportSize = workspace.CurrentCamera.ViewportSize
-    local uiWidth = isMobile and math.min(viewportSize.X * 0.95, 400) or 594
-    local uiHeight = isMobile and math.min(viewportSize.Y * 0.7, 500) or 406
-
     local screen = Instance.new("ScreenGui")
     local edge = Instance.new("Frame")
     local edgeCorner = Instance.new("UICorner")
@@ -712,81 +704,76 @@ function library:Init(key)
     local container = Instance.new("Frame")
     local containerCorner = Instance.new("UICorner")
     local containerGradient = Instance.new("UIGradient")
-    
-    -- Toggle button for mobile
-    local toggleButton = Instance.new("TextButton")
-    local toggleButtonCorner = Instance.new("UICorner")
 
     screen.Name = "screen"
     screen.Parent = CoreGuiService
     screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    screen.ResetOnSpawn = false
-    screen.IgnoreGuiInset = true
 
+    -- Detect mobile device
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    local screenSize = workspace.CurrentCamera.ViewportSize
+    
     edge.Name = "edge"
     edge.Parent = screen
     edge.AnchorPoint = Vector2.new(0.5, 0.5)
     edge.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     edge.Position = UDim2.new(0.5, 0, 0.5, 0)
-    edge.Size = UDim2.new(0, uiWidth, 0, uiHeight)
+    edge.Size = UDim2.new(0, 594, 0, 406)
 
+    -- Create toggle button for open/close
+    local toggleBtn = Instance.new("TextButton")
+    local toggleBtnCorner = Instance.new("UICorner")
+    local toggleBtnGradient = Instance.new("UIGradient")
+    
+    toggleBtn.Name = "toggleBtn"
+    toggleBtn.Parent = screen
+    toggleBtn.AnchorPoint = Vector2.new(0, 0.5)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    toggleBtn.Position = UDim2.new(0, 10, 0.5, 0)
+    toggleBtn.Size = UDim2.new(0, 50, 0, 50)
+    toggleBtn.Font = Enum.Font.Code
+    toggleBtn.Text = "☰"
+    toggleBtn.TextColor3 = Color3.fromRGB(159, 115, 255)
+    toggleBtn.TextSize = 24
+    toggleBtn.AutoButtonColor = false
+    toggleBtn.ZIndex = 1000
+    
+    toggleBtnCorner.CornerRadius = UDim.new(0, 8)
+    toggleBtnCorner.Parent = toggleBtn
+    
+    toggleBtnGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
+    toggleBtnGradient.Rotation = 90
+    toggleBtnGradient.Parent = toggleBtn
+    
+    -- Make toggle button draggable
+    drag(toggleBtn, 0.04)
+    
+    -- Toggle button functionality
+    local menuVisible = true
+    toggleBtn.MouseButton1Click:Connect(function()
+        menuVisible = not menuVisible
+        edge.Visible = menuVisible
+        toggleBtn.Text = menuVisible and "☰" or "✕"
+    end)
+    
     drag(edge, 0.04)
-    
-    -- Toggle Button Setup (separate ScreenGui so it doesn't move with main UI)
-    local toggleScreenGui = Instance.new("ScreenGui")
-    toggleScreenGui.Name = "toggleScreen"
-    toggleScreenGui.Parent = CoreGuiService
-    toggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    toggleScreenGui.ResetOnSpawn = false
-    toggleScreenGui.IgnoreGuiInset = true
-    toggleScreenGui.DisplayOrder = 100
-    
-    toggleButton.Name = "toggleButton"
-    toggleButton.Parent = toggleScreenGui
-    toggleButton.AnchorPoint = Vector2.new(0, 0)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(159, 115, 255)
-    toggleButton.Position = UDim2.new(0, 10, 0, 10)
-    toggleButton.Size = UDim2.new(0, 50, 0, 50)
-    toggleButton.Font = Enum.Font.Code
-    toggleButton.Text = "☰"
-    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.TextSize = 24
-    toggleButton.ZIndex = 1000
-    
-    toggleButtonCorner.CornerRadius = UDim.new(0, 8)
-    toggleButtonCorner.Parent = toggleButton
-    
-    drag(toggleButton, 0.04)
-    
-    local uiToggled = true
-    local debounce = false
+local uiToggled = true
+local debounce = false
 
-    toggleButton.MouseButton1Click:Connect(function()
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == key then
         if debounce then return end
         debounce = true
         
         uiToggled = not uiToggled
         edge.Visible = uiToggled
         
-        task.delay(0.2, function()
+        -- Small debounce to prevent double-triggering
+        task.delay(0.1, function()
             debounce = false
         end)
-    end)
-
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and input.KeyCode == key then
-            if debounce then return end
-            debounce = true
-            
-            uiToggled = not uiToggled
-            edge.Visible = uiToggled
-            
-            task.delay(0.2, function()
-                debounce = false
-            end)
-        end
-    end)
-    
+    end
+end)
     edgeCorner.CornerRadius = UDim.new(0, 2)
     edgeCorner.Name = "edgeCorner"
     edgeCorner.Parent = edge
@@ -796,7 +783,7 @@ function library:Init(key)
     background.AnchorPoint = Vector2.new(0.5, 0.5)
     background.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     background.Position = UDim2.new(0.5, 0, 0.5, 0)
-    background.Size = UDim2.new(0, uiWidth - 2, 0, uiHeight - 2)
+    background.Size = UDim2.new(0, 592, 0, 404)
     background.ClipsDescendants = true
 
     backgroundCorner.CornerRadius = UDim.new(0, 2)
@@ -812,7 +799,7 @@ function library:Init(key)
     headerLabel.Parent = background
     headerLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     headerLabel.BackgroundTransparency = 1.000
-    headerLabel.Size = UDim2.new(1, 0, 0, 38)
+    headerLabel.Size = UDim2.new(0, 592, 0, 38)
     headerLabel.Font = Enum.Font.Code
     headerLabel.Text = title
     headerLabel.TextColor3 = Color3.fromRGB(198, 198, 198)
@@ -834,7 +821,7 @@ function library:Init(key)
     bar.Parent = barFolder
     bar.BackgroundColor3 = Color3.fromRGB(159, 115, 255)
     bar.BackgroundTransparency = 0.200
-    bar.Size = UDim2.new(1, 0, 0, 1)
+    bar.Size = UDim2.new(0, 592, 0, 1)
     bar.BorderSizePixel = 0
 
     barCorner.CornerRadius = UDim.new(0, 2)
@@ -846,15 +833,12 @@ function library:Init(key)
     barLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     barLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-    local tabWidth = isMobile and 100 or 152
-    local containerWidth = uiWidth - 2 - tabWidth - 10
-    
     tabButtonsEdge.Name = "tabButtonsEdge"
     tabButtonsEdge.Parent = background
-    tabButtonsEdge.AnchorPoint = Vector2.new(0, 0.5)
+    tabButtonsEdge.AnchorPoint = Vector2.new(0.5, 0.5)
     tabButtonsEdge.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    tabButtonsEdge.Position = UDim2.new(0, 4, 0.536000013, 0)
-    tabButtonsEdge.Size = UDim2.new(0, tabWidth, 1, -50)
+    tabButtonsEdge.Position = UDim2.new(0.1435, 0, 0.536000013, 0)
+    tabButtonsEdge.Size = UDim2.new(0, 152, 0, 360)
 
     tabButtonCorner.CornerRadius = UDim.new(0, 2)
     tabButtonCorner.Name = "tabButtonCorner"
@@ -866,7 +850,7 @@ function library:Init(key)
     tabButtons.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
     tabButtons.ClipsDescendants = true
     tabButtons.Position = UDim2.new(0.5, 0, 0.5, 0)
-    tabButtons.Size = UDim2.new(1, -2, 1, -2)
+    tabButtons.Size = UDim2.new(0, 150, 0, 358)
 
     tabButtonCorner_2.CornerRadius = UDim.new(0, 2)
     tabButtonCorner_2.Name = "tabButtonCorner"
@@ -891,10 +875,10 @@ function library:Init(key)
 
     containerEdge.Name = "containerEdge"
     containerEdge.Parent = background
-    containerEdge.AnchorPoint = Vector2.new(1, 0.5)
+    containerEdge.AnchorPoint = Vector2.new(0.5, 0.5)
     containerEdge.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    containerEdge.Position = UDim2.new(1, -4, 0.536000013, 0)
-    containerEdge.Size = UDim2.new(0, containerWidth, 1, -50)
+    containerEdge.Position = UDim2.new(0.637000024, 0, 0.536000013, 0)
+    containerEdge.Size = UDim2.new(0, 414, 0, 360)
 
     tabButtonCorner_3.CornerRadius = UDim.new(0, 2)
     tabButtonCorner_3.Name = "tabButtonCorner"
@@ -905,7 +889,7 @@ function library:Init(key)
     container.AnchorPoint = Vector2.new(0.5, 0.5)
     container.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
     container.Position = UDim2.new(0.5, 0, 0.5, 0)
-    container.Size = UDim2.new(1, -2, 1, -2)
+    container.Size = UDim2.new(0, 412, 0, 358)
 
     containerCorner.CornerRadius = UDim.new(0, 2)
     containerCorner.Name = "containerCorner"
@@ -935,12 +919,12 @@ function library:Init(key)
         tabButton.BackgroundTransparency = 1.000
         tabButton.ClipsDescendants = true
         tabButton.Position = UDim2.new(-0.0281690136, 0, 0, 0)
-        tabButton.Size = UDim2.new(1, 0, 0, 22)
+        tabButton.Size = UDim2.new(0, 150, 0, 22)
         tabButton.AutoButtonColor = false
         tabButton.Font = Enum.Font.Code
         tabButton.Text = title
         tabButton.TextColor3 = Color3.fromRGB(170, 170, 170)
-        tabButton.TextSize = isMobile and 13 or 15
+        tabButton.TextSize = 15.000
         tabButton.RichText = true
 
         page.Name = "page"
@@ -949,10 +933,10 @@ function library:Init(key)
         page.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         page.BackgroundTransparency = 1.000
         page.BorderSizePixel = 0
-        page.Size = UDim2.new(1, 0, 1, 0)
+        page.Size = UDim2.new(0, 412, 0, 358)
         page.BottomImage = "http://www.roblox.com/asset/?id=3062506202"
         page.MidImage = "http://www.roblox.com/asset/?id=3062506202"
-        page.ScrollBarThickness = isMobile and 4 or 1
+        page.ScrollBarThickness = 1
         page.TopImage = "http://www.roblox.com/asset/?id=3062506202"
         page.ScrollBarImageColor3 = Color3.fromRGB(159, 115, 255)
         page.Visible = false
@@ -1005,10 +989,6 @@ function library:Init(key)
 
         CreateTween("hover", 0.16)
         local Components = {}
-        
-        -- Calculate component width dynamically
-        local componentWidth = containerWidth - 16
-        
         function Components:NewLabel(text, alignment)
             text = text or "label"
             alignment = alignment or "left"
@@ -1021,7 +1001,7 @@ function library:Init(key)
             label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             label.BackgroundTransparency = 1.000
             label.Position = UDim2.new(0.00499999989, 0, 0, 0)
-            label.Size = UDim2.new(1, -12, 0, 24)
+            label.Size = UDim2.new(0, 396, 0, 24)
             label.Font = Enum.Font.Code
             label.Text = text
             label.TextColor3 = Color3.fromRGB(190, 190, 190)
@@ -1101,7 +1081,7 @@ function library:Init(key)
             buttonFrame.Parent = page
             buttonFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             buttonFrame.BackgroundTransparency = 1.000
-            buttonFrame.Size = UDim2.new(1, -12, 0, 24)
+            buttonFrame.Size = UDim2.new(0, 396, 0, 24)
 
             buttonLayout.Name = "buttonLayout"
             buttonLayout.Parent = buttonFrame
@@ -1114,7 +1094,7 @@ function library:Init(key)
             button.Name = "button"
             button.Parent = buttonFrame
             button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            button.Size = UDim2.new(1, 0, 0, 24)
+            button.Size = UDim2.new(0, 396, 0, 24)
             button.AutoButtonColor = false
             button.Font = Enum.Font.SourceSans
             button.Text = ""
@@ -1380,7 +1360,7 @@ function library:Init(key)
             sectionFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             sectionFrame.BackgroundTransparency = 1.000
             sectionFrame.ClipsDescendants = true
-            sectionFrame.Size = UDim2.new(1, -12, 0, 18)
+            sectionFrame.Size = UDim2.new(0, 396, 0, 18)
 
             sectionLayout.Name = "sectionLayout"
             sectionLayout.Parent = sectionFrame
@@ -1476,7 +1456,7 @@ function library:Init(key)
             toggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             toggleButton.BackgroundTransparency = 1.000
             toggleButton.ClipsDescendants = false
-            toggleButton.Size = UDim2.new(1, -12, 0, 22)
+            toggleButton.Size = UDim2.new(0, 396, 0, 22)
             toggleButton.Font = Enum.Font.Code
             toggleButton.Text = ""
             toggleButton.TextColor3 = Color3.fromRGB(190, 190, 190)
@@ -1825,13 +1805,13 @@ function library:Init(key)
             keybindFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             keybindFrame.BackgroundTransparency = 1.000
             keybindFrame.ClipsDescendants = true
-            keybindFrame.Size = UDim2.new(1, -12, 0, 24)
+            keybindFrame.Size = UDim2.new(0, 396, 0, 24)
 
             keybindButton.Name = "keybindButton"
             keybindButton.Parent = keybindFrame
             keybindButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             keybindButton.BackgroundTransparency = 1.000
-            keybindButton.Size = UDim2.new(1, 0, 0, 24)
+            keybindButton.Size = UDim2.new(0, 396, 0, 24)
             keybindButton.AutoButtonColor = false
             keybindButton.Font = Enum.Font.SourceSans
             keybindButton.Text = ""
@@ -1849,7 +1829,7 @@ function library:Init(key)
             keybindLabel.Parent = keybindButton
             keybindLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             keybindLabel.BackgroundTransparency = 1.000
-            keybindLabel.Size = UDim2.new(1, 0, 0, 24)
+            keybindLabel.Size = UDim2.new(0, 396, 0, 24)
             keybindLabel.Font = Enum.Font.Code
             keybindLabel.Text = text
             keybindLabel.TextColor3 = Color3.fromRGB(190, 190, 190)
@@ -3082,6 +3062,324 @@ function library:Init(key)
             return SelectorFunctions
         end
         --
+        function Components:NewDropdown(text, list, default, callback)
+            text = text or "dropdown"
+            list = list or {}
+            default = default or ""
+            callback = callback or function() end
+
+            local dropdownFrame = Instance.new("Frame")
+            local dropdownButton = Instance.new("TextButton")
+            local dropdownButtonCorner = Instance.new("UICorner")
+            local dropdownButtonBackground = Instance.new("Frame")
+            local dropdownButtonGradient = Instance.new("UIGradient")
+            local dropdownButtonCorner_2 = Instance.new("UICorner")
+            local dropdownLabel = Instance.new("TextLabel")
+            local dropdownLabelPadding = Instance.new("UIPadding")
+            local dropdownArrow = Instance.new("TextLabel")
+            local dropdownListFrame = Instance.new("Frame")
+            local dropdownListCorner = Instance.new("UICorner")
+            local dropdownListBackground = Instance.new("ScrollingFrame")
+            local dropdownListGradient = Instance.new("UIGradient")
+            local dropdownListCorner_2 = Instance.new("UICorner")
+            local dropdownListLayout = Instance.new("UIListLayout")
+
+            dropdownFrame.Name = "dropdownFrame"
+            dropdownFrame.Parent = page
+            dropdownFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            dropdownFrame.BackgroundTransparency = 1.000
+            dropdownFrame.ClipsDescendants = false
+            dropdownFrame.Size = UDim2.new(0, 396, 0, 24)
+
+            dropdownButton.Name = "dropdownButton"
+            dropdownButton.Parent = dropdownFrame
+            dropdownButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            dropdownButton.Size = UDim2.new(0, 396, 0, 24)
+            dropdownButton.AutoButtonColor = false
+            dropdownButton.Font = Enum.Font.SourceSans
+            dropdownButton.Text = ""
+            dropdownButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+            dropdownButton.TextSize = 14.000
+
+            dropdownButtonCorner.CornerRadius = UDim.new(0, 2)
+            dropdownButtonCorner.Name = "dropdownButtonCorner"
+            dropdownButtonCorner.Parent = dropdownButton
+
+            dropdownButtonBackground.Name = "dropdownButtonBackground"
+            dropdownButtonBackground.Parent = dropdownButton
+            dropdownButtonBackground.AnchorPoint = Vector2.new(0.5, 0.5)
+            dropdownButtonBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            dropdownButtonBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
+            dropdownButtonBackground.Size = UDim2.new(0, 394, 0, 22)
+
+            dropdownButtonGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
+            dropdownButtonGradient.Rotation = 90
+            dropdownButtonGradient.Name = "dropdownButtonGradient"
+            dropdownButtonGradient.Parent = dropdownButtonBackground
+
+            dropdownButtonCorner_2.CornerRadius = UDim.new(0, 2)
+            dropdownButtonCorner_2.Name = "dropdownButtonCorner"
+            dropdownButtonCorner_2.Parent = dropdownButtonBackground
+
+            dropdownLabel.Name = "dropdownLabel"
+            dropdownLabel.Parent = dropdownButtonBackground
+            dropdownLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            dropdownLabel.BackgroundTransparency = 1.000
+            dropdownLabel.Position = UDim2.new(0, 0, 0, 0)
+            dropdownLabel.Size = UDim2.new(0, 340, 0, 22)
+            dropdownLabel.Font = Enum.Font.Code
+            dropdownLabel.Text = text .. ": " .. default
+            dropdownLabel.TextColor3 = Color3.fromRGB(190, 190, 190)
+            dropdownLabel.TextSize = 14.000
+            dropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
+            dropdownLabel.RichText = true
+
+            dropdownLabelPadding.Name = "dropdownLabelPadding"
+            dropdownLabelPadding.Parent = dropdownLabel
+            dropdownLabelPadding.PaddingLeft = UDim.new(0, 6)
+
+            dropdownArrow.Name = "dropdownArrow"
+            dropdownArrow.Parent = dropdownButtonBackground
+            dropdownArrow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            dropdownArrow.BackgroundTransparency = 1.000
+            dropdownArrow.Position = UDim2.new(1, -30, 0, 0)
+            dropdownArrow.Size = UDim2.new(0, 30, 0, 22)
+            dropdownArrow.Font = Enum.Font.Code
+            dropdownArrow.Text = "▼"
+            dropdownArrow.TextColor3 = Color3.fromRGB(159, 115, 255)
+            dropdownArrow.TextSize = 12.000
+
+            dropdownListFrame.Name = "dropdownListFrame"
+            dropdownListFrame.Parent = dropdownFrame
+            dropdownListFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            dropdownListFrame.Position = UDim2.new(0, 0, 0, 26)
+            dropdownListFrame.Size = UDim2.new(0, 396, 0, 0)
+            dropdownListFrame.ClipsDescendants = true
+            dropdownListFrame.Visible = false
+            dropdownListFrame.ZIndex = 10
+
+            dropdownListCorner.CornerRadius = UDim.new(0, 2)
+            dropdownListCorner.Name = "dropdownListCorner"
+            dropdownListCorner.Parent = dropdownListFrame
+
+            dropdownListBackground.Name = "dropdownListBackground"
+            dropdownListBackground.Parent = dropdownListFrame
+            dropdownListBackground.AnchorPoint = Vector2.new(0.5, 0.5)
+            dropdownListBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            dropdownListBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
+            dropdownListBackground.Size = UDim2.new(0, 394, 0, 0)
+            dropdownListBackground.ScrollBarThickness = 4
+            dropdownListBackground.BorderSizePixel = 0
+            dropdownListBackground.ScrollBarImageColor3 = Color3.fromRGB(159, 115, 255)
+            dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, 0)
+            dropdownListBackground.ZIndex = 10
+
+            dropdownListGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
+            dropdownListGradient.Rotation = 90
+            dropdownListGradient.Name = "dropdownListGradient"
+            dropdownListGradient.Parent = dropdownListBackground
+
+            dropdownListCorner_2.CornerRadius = UDim.new(0, 2)
+            dropdownListCorner_2.Name = "dropdownListCorner"
+            dropdownListCorner_2.Parent = dropdownListBackground
+
+            dropdownListLayout.Name = "dropdownListLayout"
+            dropdownListLayout.Parent = dropdownListBackground
+            dropdownListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            dropdownListLayout.Padding = UDim.new(0, 2)
+
+            CreateTween("dropdown", 0.2)
+            
+            local isOpen = false
+            local selectedValue = default
+
+            local function updateDropdownSize()
+                local itemCount = #dropdownListBackground:GetChildren() - 1
+                local totalHeight = math.min(itemCount * 22 + (itemCount - 1) * 2, 150)
+                dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, itemCount * 22 + (itemCount - 1) * 2)
+                return totalHeight
+            end
+
+            local function toggleDropdown()
+                isOpen = not isOpen
+                local targetHeight = isOpen and updateDropdownSize() or 0
+                local targetBgHeight = isOpen and math.min(updateDropdownSize(), 150) or 0
+                
+                dropdownListFrame.Visible = true
+                TweenService:Create(dropdownListFrame, TweenTable["dropdown"], {Size = UDim2.new(0, 396, 0, targetHeight + 4)}):Play()
+                TweenService:Create(dropdownListBackground, TweenTable["dropdown"], {Size = UDim2.new(0, 394, 0, targetBgHeight)}):Play()
+                TweenService:Create(dropdownArrow, TweenTable["dropdown"], {Rotation = isOpen and 180 or 0}):Play()
+                
+                if not isOpen then
+                    wait(0.2)
+                    dropdownListFrame.Visible = false
+                end
+            end
+
+            dropdownButton.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    toggleDropdown()
+                end
+            end)
+
+            for i, option in ipairs(list) do
+                local optionButton = Instance.new("TextButton")
+                
+                optionButton.Name = "option_" .. option
+                optionButton.Parent = dropdownListBackground
+                optionButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                optionButton.Size = UDim2.new(0, 394, 0, 20)
+                optionButton.AutoButtonColor = false
+                optionButton.Font = Enum.Font.Code
+                optionButton.Text = option
+                optionButton.TextColor3 = option == default and Color3.fromRGB(159, 115, 255) or Color3.fromRGB(190, 190, 190)
+                optionButton.TextSize = 14.000
+                optionButton.ZIndex = 11
+
+                local optionCorner = Instance.new("UICorner")
+                optionCorner.CornerRadius = UDim.new(0, 2)
+                optionCorner.Parent = optionButton
+
+                optionButton.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        selectedValue = option
+                        dropdownLabel.Text = text .. ": " .. option
+                        
+                        for _, child in ipairs(dropdownListBackground:GetChildren()) do
+                            if child:IsA("TextButton") then
+                                child.TextColor3 = Color3.fromRGB(190, 190, 190)
+                            end
+                        end
+                        optionButton.TextColor3 = Color3.fromRGB(159, 115, 255)
+                        
+                        callback(option)
+                        toggleDropdown()
+                    end
+                end)
+
+                optionButton.MouseEnter:Connect(function()
+                    if optionButton.TextColor3 ~= Color3.fromRGB(159, 115, 255) then
+                        TweenService:Create(optionButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+                    end
+                end)
+
+                optionButton.MouseLeave:Connect(function()
+                    TweenService:Create(optionButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+                end)
+            end
+
+            dropdownButton.MouseEnter:Connect(function()
+                TweenService:Create(dropdownButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}):Play()
+            end)
+
+            dropdownButton.MouseLeave:Connect(function()
+                TweenService:Create(dropdownButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+            end)
+
+            UpdatePageSize()
+
+            local DropdownFunctions = {}
+            
+            function DropdownFunctions:SetValue(value)
+                if table.find(list, value) then
+                    selectedValue = value
+                    dropdownLabel.Text = text .. ": " .. value
+                    callback(value)
+                end
+                return DropdownFunctions
+            end
+            
+            function DropdownFunctions:GetValue()
+                return selectedValue
+            end
+            
+            function DropdownFunctions:AddOption(option)
+                if not table.find(list, option) then
+                    table.insert(list, option)
+                    
+                    local optionButton = Instance.new("TextButton")
+                    
+                    optionButton.Name = "option_" .. option
+                    optionButton.Parent = dropdownListBackground
+                    optionButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    optionButton.Size = UDim2.new(0, 394, 0, 20)
+                    optionButton.AutoButtonColor = false
+                    optionButton.Font = Enum.Font.Code
+                    optionButton.Text = option
+                    optionButton.TextColor3 = Color3.fromRGB(190, 190, 190)
+                    optionButton.TextSize = 14.000
+                    optionButton.ZIndex = 11
+
+                    local optionCorner = Instance.new("UICorner")
+                    optionCorner.CornerRadius = UDim.new(0, 2)
+                    optionCorner.Parent = optionButton
+
+                    optionButton.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                            selectedValue = option
+                            dropdownLabel.Text = text .. ": " .. option
+                            
+                            for _, child in ipairs(dropdownListBackground:GetChildren()) do
+                                if child:IsA("TextButton") then
+                                    child.TextColor3 = Color3.fromRGB(190, 190, 190)
+                                end
+                            end
+                            optionButton.TextColor3 = Color3.fromRGB(159, 115, 255)
+                            
+                            callback(option)
+                            toggleDropdown()
+                        end
+                    end)
+
+                    optionButton.MouseEnter:Connect(function()
+                        if optionButton.TextColor3 ~= Color3.fromRGB(159, 115, 255) then
+                            TweenService:Create(optionButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+                        end
+                    end)
+
+                    optionButton.MouseLeave:Connect(function()
+                        TweenService:Create(optionButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+                    end)
+                    
+                    updateDropdownSize()
+                end
+                return DropdownFunctions
+            end
+            
+            function DropdownFunctions:RemoveOption(option)
+                local index = table.find(list, option)
+                if index then
+                    table.remove(list, index)
+                    for _, child in ipairs(dropdownListBackground:GetChildren()) do
+                        if child:IsA("TextButton") and child.Text == option then
+                            child:Destroy()
+                            break
+                        end
+                    end
+                    updateDropdownSize()
+                end
+                return DropdownFunctions
+            end
+            
+            function DropdownFunctions:Hide()
+                dropdownFrame.Visible = false
+                return DropdownFunctions
+            end
+            
+            function DropdownFunctions:Show()
+                dropdownFrame.Visible = true
+                return DropdownFunctions
+            end
+            
+            function DropdownFunctions:Remove()
+                dropdownFrame:Destroy()
+                return DropdownFunctions
+            end
+            
+            return DropdownFunctions
+        end
+        --
+
         function Components:NewSlider(text, suffix, compare, compareSign, values, callback)
             text = text or "slider"
             suffix = suffix or ""
@@ -3121,7 +3419,7 @@ function library:Init(key)
             sliderFrame.BackgroundTransparency = 1.000
             sliderFrame.ClipsDescendants = true
             sliderFrame.Position = UDim2.new(0.00499999989, 0, 0.667630076, 0)
-            sliderFrame.Size = UDim2.new(1, -12, 0, 40)
+            sliderFrame.Size = UDim2.new(0, 396, 0, 40)
 
             sliderFolder.Name = "sliderFolder"
             sliderFolder.Parent = sliderFrame
@@ -3138,7 +3436,7 @@ function library:Init(key)
             sliderButton.Parent = sliderFolder
             sliderButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
             sliderButton.Position = UDim2.new(0.348484844, 0, 0.600000024, 0)
-            sliderButton.Size = UDim2.new(1, 0, 0, 16)
+            sliderButton.Size = UDim2.new(0, 396, 0, 16)
             sliderButton.AutoButtonColor = false
             sliderButton.Font = Enum.Font.SourceSans
             sliderButton.Text = ""
@@ -3152,7 +3450,7 @@ function library:Init(key)
             sliderBackground.Name = "sliderBackground"
             sliderBackground.Parent = sliderButton
             sliderBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            sliderBackground.Size = UDim2.new(1, -2, 0, 14)
+            sliderBackground.Size = UDim2.new(0, 394, 0, 14)
             sliderBackground.ClipsDescendants = true
 
             sliderButtonCorner_2.CornerRadius = UDim.new(0, 2)
@@ -3206,7 +3504,7 @@ function library:Init(key)
             sliderLabel.Parent = sliderFrame
             sliderLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             sliderLabel.BackgroundTransparency = 1.000
-            sliderLabel.Size = UDim2.new(1, 0, 0, 24)
+            sliderLabel.Size = UDim2.new(0, 396, 0, 24)
             sliderLabel.Font = Enum.Font.Code
             sliderLabel.Text = text
             sliderLabel.TextColor3 = Color3.fromRGB(190, 190, 190)
@@ -3248,61 +3546,46 @@ function library:Init(key)
             local ValueNum = values.default
             local slideText = compare and ValueNum .. compareSign .. tostring(values.max - 1) .. suffix or ValueNum .. suffix
             sliderValue.Text = slideText
+            local isDragging = false
+            local moveconnection
+            local releaseconnection
             
-            local function UpdateSlider(inputPosition)
-                local relativePos = inputPosition.X - sliderBackground.AbsolutePosition.X
-                TweenService:Create(sliderIndicator, TweenTable["slider_drag"], {Size = UDim2.new(0, math.clamp(relativePos, 0, sliderBackground.AbsoluteSize.X), 0, 12)}):Play()
+            local function UpdateSlider(inputPos)
+                if not isDragging then return end
+                
+                local relativePos = inputPos.X - sliderBackground.AbsolutePosition.X
+                local clampedSize = math.clamp(relativePos, 0, sliderBackground.AbsoluteSize.X)
+                
+                TweenService:Create(sliderIndicator, TweenTable["slider_drag"], {Size = UDim2.new(0, clampedSize, 0, 12)}):Play()
 
-                ValueNum = math.floor((((tonumber(values.max) - tonumber(values.min)) / sliderBackground.AbsoluteSize.X) * sliderIndicator.AbsoluteSize.X) + tonumber(values.min)) or 0.00
+                ValueNum = math.floor((((tonumber(values.max) - tonumber(values.min)) / sliderBackground.AbsoluteSize.X) * clampedSize) + tonumber(values.min)) or 0.00
 
-                local slideText = compare and ValueNum .. compareSign .. tostring(values.max - 1) .. suffix or ValueNum .. suffix
-
+                slideText = compare and ValueNum .. compareSign .. tostring(values.max - 1) .. suffix or ValueNum .. suffix
                 sliderValue.Text = slideText
 
                 pcall(function()
                     callback(ValueNum)
                 end)
-
-                sliderValue.Text = slideText
-
-                moveconnection = UserInputService.InputChanged:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                        local relativePos = input.Position.X - sliderBackground.AbsolutePosition.X
-                        ValueNum = math.floor((((tonumber(values.max) - tonumber(values.min)) / sliderBackground.AbsoluteSize.X) * math.clamp(relativePos, 0, sliderBackground.AbsoluteSize.X)) + tonumber(values.min))
-                        
-                        slideText = compare and ValueNum .. compareSign .. tostring(values.max - 1) .. suffix or ValueNum .. suffix
-                        sliderValue.Text = slideText
-
-                        pcall(function()
-                            callback(ValueNum)
-                        end)
-
-                        TweenService:Create(sliderIndicator, TweenTable["slider_drag"], {Size = UDim2.new(0, math.clamp(relativePos, 0, sliderBackground.AbsoluteSize.X), 0, 12)}):Play()
-                    end
-                end)
-
-                releaseconnection = UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        local relativePos = input.Position.X - sliderBackground.AbsolutePosition.X
-                        ValueNum = math.floor((((tonumber(values.max) - tonumber(values.min)) / sliderBackground.AbsoluteSize.X) * math.clamp(relativePos, 0, sliderBackground.AbsoluteSize.X)) + tonumber(values.min))
-                        
-                        slideText = compare and ValueNum .. compareSign .. tostring(values.max - 1) .. suffix or ValueNum .. suffix
-                        sliderValue.Text = slideText
-
-                        pcall(function()
-                            callback(ValueNum)
-                        end)
-
-                        TweenService:Create(sliderIndicator, TweenTable["slider_drag"], {Size = UDim2.new(0, math.clamp(relativePos, 0, sliderBackground.AbsoluteSize.X), 0, 12)}):Play()
-                        moveconnection:Disconnect()
-                        releaseconnection:Disconnect()
-                    end
-                end)
             end
 
             sliderButton.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    isDragging = true
                     UpdateSlider(input.Position)
+                    
+                    moveconnection = UserInputService.InputChanged:Connect(function(inp)
+                        if isDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+                            UpdateSlider(inp.Position)
+                        end
+                    end)
+
+                    releaseconnection = UserInputService.InputEnded:Connect(function(inp)
+                        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                            isDragging = false
+                            if moveconnection then moveconnection:Disconnect() end
+                            if releaseconnection then releaseconnection:Disconnect() end
+                        end
+                    end)
                 end
             end)
 
@@ -3375,7 +3658,7 @@ function library:Init(key)
             sectionFrame.BackgroundTransparency = 1.000
             sectionFrame.ClipsDescendants = true
             sectionFrame.Position = UDim2.new(0.00499999989, 0, 0.361271679, 0)
-            sectionFrame.Size = UDim2.new(1, -12, 0, 12)
+            sectionFrame.Size = UDim2.new(0, 396, 0, 12)
 
             sectionLayout.Name = "sectionLayout"
             sectionLayout.Parent = sectionFrame
@@ -3409,311 +3692,6 @@ function library:Init(key)
                 return SeperatorFunctions
             end
             return SeperatorFunctions
-        end
-        --
-        function Components:NewDropdown(text, options, default, callback)
-            text = text or "dropdown"
-            options = options or {}
-            default = default or options[1] or "None"
-            callback = callback or function() end
-
-            local dropdownFrame = Instance.new("Frame")
-            local dropdownLayout = Instance.new("UIListLayout")
-            local dropdownButton = Instance.new("TextButton")
-            local dropdownButtonCorner = Instance.new("UICorner")
-            local dropdownBackground = Instance.new("Frame")
-            local dropdownBackgroundCorner = Instance.new("UICorner")
-            local dropdownBackgroundGradient = Instance.new("UIGradient")
-            local dropdownLabel = Instance.new("TextLabel")
-            local dropdownValue = Instance.new("TextLabel")
-            local dropdownArrow = Instance.new("TextLabel")
-            local dropdownOptionsFrame = Instance.new("ScrollingFrame")
-            local dropdownOptionsLayout = Instance.new("UIListLayout")
-            local dropdownOptionsPadding = Instance.new("UIPadding")
-
-            dropdownFrame.Name = "dropdownFrame"
-            dropdownFrame.Parent = page
-            dropdownFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            dropdownFrame.BackgroundTransparency = 1.000
-            dropdownFrame.ClipsDescendants = false
-            dropdownFrame.Size = UDim2.new(1, -12, 0, 26)
-            dropdownFrame.ZIndex = 5
-
-            dropdownLayout.Name = "dropdownLayout"
-            dropdownLayout.Parent = dropdownFrame
-            dropdownLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            dropdownLayout.Padding = UDim.new(0, 2)
-
-            dropdownButton.Name = "dropdownButton"
-            dropdownButton.Parent = dropdownFrame
-            dropdownButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            dropdownButton.Size = UDim2.new(1, 0, 0, 24)
-            dropdownButton.AutoButtonColor = false
-            dropdownButton.Font = Enum.Font.SourceSans
-            dropdownButton.Text = ""
-            dropdownButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-            dropdownButton.TextSize = 14.000
-            dropdownButton.ZIndex = 6
-
-            dropdownButtonCorner.CornerRadius = UDim.new(0, 2)
-            dropdownButtonCorner.Name = "dropdownButtonCorner"
-            dropdownButtonCorner.Parent = dropdownButton
-
-            dropdownBackground.Name = "dropdownBackground"
-            dropdownBackground.Parent = dropdownButton
-            dropdownBackground.AnchorPoint = Vector2.new(0.5, 0.5)
-            dropdownBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            dropdownBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
-            dropdownBackground.Size = UDim2.new(0, 394, 0, 22)
-            dropdownBackground.ZIndex = 6
-
-            dropdownBackgroundCorner.CornerRadius = UDim.new(0, 2)
-            dropdownBackgroundCorner.Name = "dropdownBackgroundCorner"
-            dropdownBackgroundCorner.Parent = dropdownBackground
-
-            dropdownBackgroundGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
-            dropdownBackgroundGradient.Rotation = 90
-            dropdownBackgroundGradient.Name = "dropdownBackgroundGradient"
-            dropdownBackgroundGradient.Parent = dropdownBackground
-
-            dropdownLabel.Name = "dropdownLabel"
-            dropdownLabel.Parent = dropdownBackground
-            dropdownLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            dropdownLabel.BackgroundTransparency = 1.000
-            dropdownLabel.Position = UDim2.new(0, 6, 0, 0)
-            dropdownLabel.Size = UDim2.new(0, 200, 0, 22)
-            dropdownLabel.Font = Enum.Font.Code
-            dropdownLabel.Text = text
-            dropdownLabel.TextColor3 = Color3.fromRGB(190, 190, 190)
-            dropdownLabel.TextSize = 14.000
-            dropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
-            dropdownLabel.RichText = true
-            dropdownLabel.ZIndex = 7
-
-            dropdownValue.Name = "dropdownValue"
-            dropdownValue.Parent = dropdownBackground
-            dropdownValue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            dropdownValue.BackgroundTransparency = 1.000
-            dropdownValue.Position = UDim2.new(0.5, 0, 0, 0)
-            dropdownValue.Size = UDim2.new(0, 170, 0, 22)
-            dropdownValue.Font = Enum.Font.Code
-            dropdownValue.Text = default
-            dropdownValue.TextColor3 = Color3.fromRGB(159, 115, 255)
-            dropdownValue.TextSize = 13.000
-            dropdownValue.TextXAlignment = Enum.TextXAlignment.Right
-            dropdownValue.RichText = true
-            dropdownValue.ZIndex = 7
-
-            dropdownArrow.Name = "dropdownArrow"
-            dropdownArrow.Parent = dropdownBackground
-            dropdownArrow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            dropdownArrow.BackgroundTransparency = 1.000
-            dropdownArrow.Position = UDim2.new(1, -20, 0, 0)
-            dropdownArrow.Size = UDim2.new(0, 20, 0, 22)
-            dropdownArrow.Font = Enum.Font.Code
-            dropdownArrow.Text = "▼"
-            dropdownArrow.TextColor3 = Color3.fromRGB(190, 190, 190)
-            dropdownArrow.TextSize = 10.000
-            dropdownArrow.ZIndex = 7
-
-            dropdownOptionsFrame.Name = "dropdownOptionsFrame"
-            dropdownOptionsFrame.Parent = dropdownFrame
-            dropdownOptionsFrame.Active = true
-            dropdownOptionsFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            dropdownOptionsFrame.BorderSizePixel = 0
-            dropdownOptionsFrame.Position = UDim2.new(0, 0, 0, 26)
-            dropdownOptionsFrame.Size = UDim2.new(1, 0, 0, 0)
-            dropdownOptionsFrame.Visible = false
-            dropdownOptionsFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-            dropdownOptionsFrame.ScrollBarThickness = 4
-            dropdownOptionsFrame.ScrollBarImageColor3 = Color3.fromRGB(159, 115, 255)
-            dropdownOptionsFrame.ZIndex = 10
-            dropdownOptionsFrame.ClipsDescendants = true
-
-            dropdownOptionsLayout.Name = "dropdownOptionsLayout"
-            dropdownOptionsLayout.Parent = dropdownOptionsFrame
-            dropdownOptionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            dropdownOptionsLayout.Padding = UDim.new(0, 2)
-
-            dropdownOptionsPadding.Name = "dropdownOptionsPadding"
-            dropdownOptionsPadding.Parent = dropdownOptionsFrame
-            dropdownOptionsPadding.PaddingBottom = UDim.new(0, 4)
-            dropdownOptionsPadding.PaddingLeft = UDim.new(0, 4)
-            dropdownOptionsPadding.PaddingRight = UDim.new(0, 4)
-            dropdownOptionsPadding.PaddingTop = UDim.new(0, 4)
-
-            local isOpen = false
-            local currentValue = default
-
-            local function UpdateOptionsSize()
-                local contentSize = dropdownOptionsLayout.AbsoluteContentSize.Y + 8
-                dropdownOptionsFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize)
-            end
-
-            local function CreateOption(optionText)
-                local optionButton = Instance.new("TextButton")
-                local optionCorner = Instance.new("UICorner")
-                local optionBackground = Instance.new("Frame")
-                local optionBackgroundCorner = Instance.new("UICorner")
-                local optionBackgroundGradient = Instance.new("UIGradient")
-                local optionLabel = Instance.new("TextLabel")
-
-                optionButton.Name = "optionButton"
-                optionButton.Parent = dropdownOptionsFrame
-                optionButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-                optionButton.Size = UDim2.new(1, -8, 0, 22)
-                optionButton.AutoButtonColor = false
-                optionButton.Font = Enum.Font.SourceSans
-                optionButton.Text = ""
-                optionButton.TextSize = 14.000
-                optionButton.ZIndex = 11
-
-                optionCorner.CornerRadius = UDim.new(0, 2)
-                optionCorner.Parent = optionButton
-
-                optionBackground.Name = "optionBackground"
-                optionBackground.Parent = optionButton
-                optionBackground.AnchorPoint = Vector2.new(0.5, 0.5)
-                optionBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                optionBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
-                optionBackground.Size = UDim2.new(1, -2, 1, -2)
-                optionBackground.ZIndex = 11
-
-                optionBackgroundCorner.CornerRadius = UDim.new(0, 2)
-                optionBackgroundCorner.Parent = optionBackground
-
-                optionBackgroundGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 30, 30)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(25, 25, 25))}
-                optionBackgroundGradient.Rotation = 90
-                optionBackgroundGradient.Parent = optionBackground
-
-                optionLabel.Name = "optionLabel"
-                optionLabel.Parent = optionBackground
-                optionLabel.BackgroundTransparency = 1.000
-                optionLabel.Size = UDim2.new(1, 0, 1, 0)
-                optionLabel.Font = Enum.Font.Code
-                optionLabel.Text = optionText
-                optionLabel.TextColor3 = Color3.fromRGB(190, 190, 190)
-                optionLabel.TextSize = 13.000
-                optionLabel.TextXAlignment = Enum.TextXAlignment.Left
-                optionLabel.ZIndex = 12
-                
-                local optionPadding = Instance.new("UIPadding")
-                optionPadding.Parent = optionLabel
-                optionPadding.PaddingLeft = UDim.new(0, 6)
-
-                optionButton.MouseEnter:Connect(function()
-                    TweenService:Create(optionButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
-                end)
-                
-                optionButton.MouseLeave:Connect(function()
-                    TweenService:Create(optionButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
-                end)
-
-                optionButton.MouseButton1Click:Connect(function()
-                    currentValue = optionText
-                    dropdownValue.Text = optionText
-                    isOpen = false
-                    dropdownOptionsFrame.Visible = false
-                    TweenService:Create(dropdownOptionsFrame, TweenTable["hover"], {Size = UDim2.new(1, 0, 0, 0)}):Play()
-                    TweenService:Create(dropdownArrow, TweenTable["hover"], {Rotation = 0}):Play()
-                    pcall(function()
-                        callback(optionText)
-                    end)
-                end)
-
-                UpdateOptionsSize()
-            end
-
-            for _, option in pairs(options) do
-                CreateOption(option)
-            end
-
-            dropdownButton.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
-                dropdownOptionsFrame.Visible = isOpen
-                
-                if isOpen then
-                    local maxHeight = math.min(#options * 24 + 8, 150)
-                    TweenService:Create(dropdownOptionsFrame, TweenTable["hover"], {Size = UDim2.new(1, 0, 0, maxHeight)}):Play()
-                    TweenService:Create(dropdownArrow, TweenTable["hover"], {Rotation = 180}):Play()
-                else
-                    TweenService:Create(dropdownOptionsFrame, TweenTable["hover"], {Size = UDim2.new(1, 0, 0, 0)}):Play()
-                    TweenService:Create(dropdownArrow, TweenTable["hover"], {Rotation = 0}):Play()
-                end
-            end)
-
-            dropdownButton.MouseEnter:Connect(function()
-                TweenService:Create(dropdownButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}):Play()
-            end)
-            
-            dropdownButton.MouseLeave:Connect(function()
-                TweenService:Create(dropdownButton, TweenTable["hover"], {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
-            end)
-
-            UpdatePageSize()
-
-            local DropdownFunctions = {}
-            function DropdownFunctions:SetValue(value)
-                currentValue = value
-                dropdownValue.Text = value
-                pcall(function()
-                    callback(value)
-                end)
-                return DropdownFunctions
-            end
-
-            function DropdownFunctions:GetValue()
-                return currentValue
-            end
-
-            function DropdownFunctions:AddOption(option)
-                table.insert(options, option)
-                CreateOption(option)
-                return DropdownFunctions
-            end
-
-            function DropdownFunctions:RemoveOption(option)
-                for i, v in pairs(dropdownOptionsFrame:GetChildren()) do
-                    if v:IsA("TextButton") and v:FindFirstChild("optionBackground") then
-                        local label = v.optionBackground:FindFirstChild("optionLabel")
-                        if label and label.Text == option then
-                            v:Destroy()
-                        end
-                    end
-                end
-                UpdateOptionsSize()
-                return DropdownFunctions
-            end
-
-            function DropdownFunctions:ClearOptions()
-                for i, v in pairs(dropdownOptionsFrame:GetChildren()) do
-                    if v:IsA("TextButton") then
-                        v:Destroy()
-                    end
-                end
-                options = {}
-                UpdateOptionsSize()
-                return DropdownFunctions
-            end
-
-            function DropdownFunctions:Hide()
-                dropdownFrame.Visible = false
-                UpdatePageSize()
-                return DropdownFunctions
-            end
-
-            function DropdownFunctions:Show()
-                dropdownFrame.Visible = true
-                UpdatePageSize()
-                return DropdownFunctions
-            end
-
-            function DropdownFunctions:Remove()
-                dropdownFrame:Destroy()
-                return DropdownFunctions
-            end
-
-            return DropdownFunctions
         end
         --
         function Components:Open()
