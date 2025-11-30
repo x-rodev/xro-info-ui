@@ -720,6 +720,8 @@ function library:Init(key)
     screen.Name = "screen"
     screen.Parent = CoreGuiService
     screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screen.ResetOnSpawn = false
+    screen.IgnoreGuiInset = true
 
     edge.Name = "edge"
     edge.Parent = screen
@@ -730,17 +732,25 @@ function library:Init(key)
 
     drag(edge, 0.04)
     
-    -- Toggle Button Setup
+    -- Toggle Button Setup (separate ScreenGui so it doesn't move with main UI)
+    local toggleScreenGui = Instance.new("ScreenGui")
+    toggleScreenGui.Name = "toggleScreen"
+    toggleScreenGui.Parent = CoreGuiService
+    toggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    toggleScreenGui.ResetOnSpawn = false
+    toggleScreenGui.IgnoreGuiInset = true
+    toggleScreenGui.DisplayOrder = 100
+    
     toggleButton.Name = "toggleButton"
-    toggleButton.Parent = screen
+    toggleButton.Parent = toggleScreenGui
     toggleButton.AnchorPoint = Vector2.new(0, 0)
     toggleButton.BackgroundColor3 = Color3.fromRGB(159, 115, 255)
     toggleButton.Position = UDim2.new(0, 10, 0, 10)
-    toggleButton.Size = UDim2.new(0, 50, 0, 50)
+    toggleButton.Size = UDim2.new(0, isMobile and 60 or 50, 0, isMobile and 60 or 50)
     toggleButton.Font = Enum.Font.Code
     toggleButton.Text = "☰"
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.TextSize = 24
+    toggleButton.TextSize = isMobile and 28 or 24
     toggleButton.ZIndex = 1000
     
     toggleButtonCorner.CornerRadius = UDim.new(0, 8)
@@ -836,7 +846,7 @@ function library:Init(key)
     barLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     barLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-    local tabWidth = isMobile and 100 or 152
+    local tabWidth = isMobile and 80 or 152
     local containerWidth = uiWidth - 2 - tabWidth - 10
     
     tabButtonsEdge.Name = "tabButtonsEdge"
@@ -844,7 +854,7 @@ function library:Init(key)
     tabButtonsEdge.AnchorPoint = Vector2.new(0, 0.5)
     tabButtonsEdge.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     tabButtonsEdge.Position = UDim2.new(0, 4, 0.536000013, 0)
-    tabButtonsEdge.Size = UDim2.new(0, tabWidth, 0, uiHeight - 50)
+    tabButtonsEdge.Size = UDim2.new(0, tabWidth, 1, -50)
 
     tabButtonCorner.CornerRadius = UDim.new(0, 2)
     tabButtonCorner.Name = "tabButtonCorner"
@@ -884,7 +894,7 @@ function library:Init(key)
     containerEdge.AnchorPoint = Vector2.new(1, 0.5)
     containerEdge.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     containerEdge.Position = UDim2.new(1, -4, 0.536000013, 0)
-    containerEdge.Size = UDim2.new(0, containerWidth, 0, uiHeight - 50)
+    containerEdge.Size = UDim2.new(0, containerWidth, 1, -50)
 
     tabButtonCorner_3.CornerRadius = UDim.new(0, 2)
     tabButtonCorner_3.Name = "tabButtonCorner"
