@@ -3528,7 +3528,7 @@ end)
             dropdownButton.Text = ""
             dropdownButton.TextColor3 = Color3.fromRGB(0, 0, 0)
             dropdownButton.TextSize = 14.000
-            dropdownButton.ZIndex = 150
+            dropdownButton.ZIndex = 2050
 
             dropdownButtonCorner.CornerRadius = UDim.new(0, 2)
             dropdownButtonCorner.Name = "dropdownButtonCorner"
@@ -3540,7 +3540,7 @@ end)
             dropdownButtonBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             dropdownButtonBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
             dropdownButtonBackground.Size = UDim2.new(0, 394, 0, 22)
-            dropdownButtonBackground.ZIndex = 151
+            dropdownButtonBackground.ZIndex = 2051
 
             dropdownButtonGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownButtonGradient.Rotation = 90
@@ -3563,7 +3563,7 @@ end)
             dropdownLabel.TextSize = 14.000
             dropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
             dropdownLabel.RichText = true
-            dropdownLabel.ZIndex = 152
+            dropdownLabel.ZIndex = 2052
 
             dropdownLabelPadding.Name = "dropdownLabelPadding"
             dropdownLabelPadding.Parent = dropdownLabel
@@ -3579,7 +3579,7 @@ end)
             dropdownArrow.Text = "▼"
             dropdownArrow.TextColor3 = Color3.fromRGB(159, 115, 255)
             dropdownArrow.TextSize = 12.000
-            dropdownArrow.ZIndex = 152
+            dropdownArrow.ZIndex = 2052
 
             dropdownListFrame.Name = "dropdownListFrame"
             dropdownListFrame.Parent = dropdownFrame
@@ -3588,7 +3588,7 @@ end)
             dropdownListFrame.Size = UDim2.new(0, 396, 0, 0)
             dropdownListFrame.ClipsDescendants = true
             dropdownListFrame.Visible = false
-            dropdownListFrame.ZIndex = 1000
+            dropdownListFrame.ZIndex = 2000
 
             dropdownListCorner.CornerRadius = UDim.new(0, 2)
             dropdownListCorner.Name = "dropdownListCorner"
@@ -3600,11 +3600,15 @@ end)
             dropdownListBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             dropdownListBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
             dropdownListBackground.Size = UDim2.new(0, 394, 0, 0)
-            dropdownListBackground.ScrollBarThickness = 4
+            dropdownListBackground.ScrollBarThickness = 6
             dropdownListBackground.BorderSizePixel = 0
             dropdownListBackground.ScrollBarImageColor3 = Color3.fromRGB(159, 115, 255)
+            dropdownListBackground.ScrollBarImageTransparency = 0
             dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, 0)
-            dropdownListBackground.ZIndex = 1001
+            dropdownListBackground.ScrollingEnabled = true
+            dropdownListBackground.ElasticBehavior = Enum.ElasticBehavior.Never
+            dropdownListBackground.ScrollingDirection = Enum.ScrollingDirection.Y
+            dropdownListBackground.ZIndex = 2001
 
             dropdownListGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 28, 28))}
             dropdownListGradient.Rotation = 90
@@ -3627,15 +3631,44 @@ end)
 
             local function updateDropdownSize()
                 local itemCount = #dropdownListBackground:GetChildren() - 1
-                local totalHeight = math.min(itemCount * 22 + (itemCount - 1) * 2, 150)
+                local totalHeight = math.min(itemCount * 22 + (itemCount - 1) * 2, 200)
                 dropdownListBackground.CanvasSize = UDim2.new(0, 0, 0, itemCount * 22 + (itemCount - 1) * 2)
                 return totalHeight
+            end
+
+            local function checkDropdownPosition()
+                -- Check if dropdown should expand upward or downward
+                local screenGui = dropdownFrame:FindFirstAncestorOfClass("ScreenGui")
+                if not screenGui then return false end
+                
+                local dropdownAbsPos = dropdownFrame.AbsolutePosition
+                local dropdownAbsSize = dropdownFrame.AbsoluteSize
+                local screenSize = screenGui.AbsoluteSize
+                
+                -- Calculate space below dropdown
+                local spaceBelow = screenSize.Y - (dropdownAbsPos.Y + dropdownAbsSize.Y)
+                
+                -- If less than 200px space below, expand upward
+                return spaceBelow < 200
             end
 
             local function toggleDropdown()
                 isOpen = not isOpen
                 local targetHeight = isOpen and updateDropdownSize() or 0
-                local targetBgHeight = isOpen and math.min(updateDropdownSize(), 150) or 0
+                local targetBgHeight = isOpen and math.min(updateDropdownSize(), 200) or 0
+                
+                -- Determine direction to expand
+                local expandUpward = checkDropdownPosition()
+                
+                if isOpen then
+                    if expandUpward then
+                        -- Position dropdown list above the button
+                        dropdownListFrame.Position = UDim2.new(0, 0, 0, -(targetHeight + 4))
+                    else
+                        -- Position dropdown list below the button (default)
+                        dropdownListFrame.Position = UDim2.new(0, 0, 0, 26)
+                    end
+                end
                 
                 dropdownListFrame.Visible = true
                 TweenService:Create(dropdownListFrame, TweenTable["dropdown"], {Size = UDim2.new(0, 396, 0, targetHeight + 4)}):Play()
@@ -3666,7 +3699,7 @@ end)
                 optionButton.Text = option
                 optionButton.TextColor3 = option == default and Color3.fromRGB(159, 115, 255) or Color3.fromRGB(190, 190, 190)
                 optionButton.TextSize = 14.000
-                optionButton.ZIndex = 1002
+                optionButton.ZIndex = 2002
 
                 local optionCorner = Instance.new("UICorner")
                 optionCorner.CornerRadius = UDim.new(0, 2)
@@ -3740,7 +3773,7 @@ end)
                     optionButton.Text = option
                     optionButton.TextColor3 = Color3.fromRGB(190, 190, 190)
                     optionButton.TextSize = 14.000
-                    optionButton.ZIndex = 1002
+                    optionButton.ZIndex = 2002
 
                     local optionCorner = Instance.new("UICorner")
                     optionCorner.CornerRadius = UDim.new(0, 2)
