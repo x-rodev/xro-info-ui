@@ -1002,7 +1002,7 @@ end)
 
         local function UpdatePageSize()
             local correction = pageLayout.AbsoluteContentSize
-            page.CanvasSize = UDim2.new(0, correction.X+13, 0, correction.Y+500)
+            page.CanvasSize = UDim2.new(0, correction.X+13, 0, correction.Y+2000)
         end
 
         page.ChildAdded:Connect(UpdatePageSize)
