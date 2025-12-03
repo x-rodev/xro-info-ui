@@ -540,7 +540,7 @@ function Library:create_ui()
     Tabs.Parent = Handler
     
     local UIListLayout = Instance.new('UIListLayout')
-    UIListLayout.Padding = UDim.new(0, 4)
+    UIListLayout.Padding = UDim.new(0, 8)
     UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     UIListLayout.Parent = Tabs
     
@@ -609,20 +609,7 @@ function Library:create_ui()
     Sections.Name = 'Sections'
     Sections.Parent = Handler
     
-    local Minimize = Instance.new('TextButton')
-    Minimize.FontFace = Font.new('rbxasset://fonts/families/SourceSansPro.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-    Minimize.TextColor3 = Color3.fromRGB(0, 0, 0)
-    Minimize.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    Minimize.Text = ''
-    Minimize.AutoButtonColor = false
-    Minimize.Name = 'Minimize'
-    Minimize.BackgroundTransparency = 1
-    Minimize.Position = UDim2.new(0.020057305693626404, 0, 0.02922755666077137, 0)
-    Minimize.Size = UDim2.new(0, 24, 0, 24)
-    Minimize.BorderSizePixel = 0
-    Minimize.TextSize = 14
-    Minimize.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Minimize.Parent = Handler
+    -- Minimize button removed
     
     local MobileToggle = Instance.new('TextButton')
     MobileToggle.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.Bold, Enum.FontStyle.Normal)
@@ -1572,7 +1559,7 @@ function Library:create_ui()
                 Box.BackgroundTransparency = 0.9
                 Box.Position = UDim2.new(1, 0, 0.5, 0)
                 Box.Name = "Box"
-                Box.Size = UDim2.new(0, 15, 0, 15)
+                Box.Size = UDim2.new(0, 18, 0, 18)
                 Box.BorderSizePixel = 0
                 Box.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Box.Parent = Checkbox
@@ -1602,7 +1589,7 @@ function Library:create_ui()
                             BackgroundTransparency = 0.7
                         }):Play()
                         TweenService:Create(Fill, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                            Size = UDim2.fromOffset(9, 9)
+                            Size = UDim2.fromOffset(11, 11)
                         }):Play()
                     else
                         TweenService:Create(Box, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
@@ -2218,9 +2205,12 @@ function Library:create_ui()
                     self._state = not self._state
 
                     if self._state then
+                        if CurrentDropSizeState > 0 then
+                            ModuleManager._multiplier -= CurrentDropSizeState
+                        end
+                        
                         ModuleManager._multiplier += self._size
-
-                        CurrentDropSizeState = self._size;
+                        CurrentDropSizeState = self._size
 
                         TweenService:Create(Module, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                             Size = UDim2.fromOffset(241, 93 + ModuleManager._size + ModuleManager._multiplier)
@@ -2441,7 +2431,7 @@ function Library:create_ui()
             
                 if not settings.disablecheck then
                     local Checkbox = Instance.new("TextButton")
-                    Checkbox.Size = UDim2.new(0, 15, 0, 15)
+                    Checkbox.Size = UDim2.new(0, 18, 0, 18)
                     Checkbox.BackgroundColor3 = checked and Color3.fromRGB(152, 181, 255) or Color3.fromRGB(32, 38, 51)
                     Checkbox.Text = ""
                     Checkbox.Parent = RightContainer
@@ -2538,11 +2528,6 @@ function Library:create_ui()
         end
     end)
 
-    self._ui.Container.Handler.Minimize.MouseButton1Click:Connect(function()
-        self._ui_open = not self._ui_open
-        self:change_visiblity(self._ui_open)
-    end)
-    
     self._ui.MobileToggle.MouseButton1Click:Connect(function()
         self._ui_open = not self._ui_open
         self:change_visiblity(self._ui_open)
