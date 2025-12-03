@@ -631,18 +631,26 @@ function Library:create_ui()
     MobileToggle.Text = '☰'
     MobileToggle.AutoButtonColor = false
     MobileToggle.Name = 'MobileToggle'
-    MobileToggle.BackgroundTransparency = 0.3
-    MobileToggle.Position = UDim2.new(0.88, 0, 0.029, 0)
-    MobileToggle.Size = UDim2.new(0, 44, 0, 44)
+    MobileToggle.BackgroundTransparency = 0.2
+    MobileToggle.AnchorPoint = Vector2.new(0, 0.5)
+    MobileToggle.Position = UDim2.new(0, 10, 0.5, 0)
+    MobileToggle.Size = UDim2.new(0, 50, 0, 50)
     MobileToggle.BorderSizePixel = 0
-    MobileToggle.TextSize = 24
+    MobileToggle.TextSize = 28
     MobileToggle.BackgroundColor3 = Color3.fromRGB(22, 28, 38)
     MobileToggle.Visible = false
-    MobileToggle.Parent = Handler
+    MobileToggle.ZIndex = 1000
+    MobileToggle.Parent = March
     
     local UICornerMobile = Instance.new('UICorner')
-    UICornerMobile.CornerRadius = UDim.new(0, 8)
+    UICornerMobile.CornerRadius = UDim.new(0, 10)
     UICornerMobile.Parent = MobileToggle
+    
+    local UIStrokeMobile = Instance.new('UIStroke')
+    UIStrokeMobile.Color = Color3.fromRGB(152, 181, 255)
+    UIStrokeMobile.Thickness = 2
+    UIStrokeMobile.Transparency = 0.5
+    UIStrokeMobile.Parent = MobileToggle
     
     local UIScale = Instance.new('UIScale')
     UIScale.Parent = Container    
@@ -737,7 +745,7 @@ function Library:create_ui()
         if self._device == 'Mobile' or self._device == 'Unknown' then
             self:get_screen_scale()
             UIScale.Scale = self._ui_scale
-            Handler.MobileToggle.Visible = true
+            March.MobileToggle.Visible = true
     
             Connections['ui_scale'] = workspace.CurrentCamera:GetPropertyChangedSignal('ViewportSize'):Connect(function()
                 self:get_screen_scale()
@@ -1079,6 +1087,7 @@ function Library:create_ui()
             Keybind.Size = UDim2.new(0, 33, 0, 15)
             Keybind.BorderSizePixel = 0
             Keybind.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
+            Keybind.Visible = false
             Keybind.Parent = Header
             
             local UICorner = Instance.new('UICorner')
@@ -1195,6 +1204,7 @@ function Library:create_ui()
             if Library._config._keybinds[settings.flag] then
                 local keybind_string = string.gsub(tostring(Library._config._keybinds[settings.flag]), 'Enum.KeyCode.', '')
                 TextLabel.Text = keybind_string
+                Keybind.Visible = true
 
                 ModuleManager:connect_keybind()
                 ModuleManager:scale_keybind()
@@ -1231,6 +1241,7 @@ function Library:create_ui()
                         Config:save(game.GameId, Library._config)
 
                         TextLabel.Text = 'None'
+                        Keybind.Visible = false
                         
                         if Connections[settings.flag..'_keybind'] then
                             Connections[settings.flag..'_keybind']:Disconnect()
@@ -1258,6 +1269,7 @@ function Library:create_ui()
 
                     ModuleManager:connect_keybind()
                     ModuleManager:scale_keybind()
+                    Keybind.Visible = true
                     
                     Library._choosing_keybind = false
 
@@ -1757,7 +1769,7 @@ function Library:create_ui()
                     self._size = 11
                 end
 
-                self._size += 27
+                self._size += 35
                 Module.Size = UDim2.fromOffset(241, 93 + self._size)
                 Options.Size = UDim2.fromOffset(241, self._size)
 
@@ -1770,7 +1782,7 @@ function Library:create_ui()
                 Slider.AutoButtonColor = false
                 Slider.BackgroundTransparency = 1
                 Slider.Name = 'Slider'
-                Slider.Size = UDim2.new(0, 207, 0, 22)
+                Slider.Size = UDim2.new(0, 207, 0, 30)
                 Slider.BorderSizePixel = 0
                 Slider.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                 Slider.Parent = Options
@@ -1800,9 +1812,9 @@ function Library:create_ui()
                 Drag.BorderColor3 = Color3.fromRGB(0, 0, 0)
                 Drag.AnchorPoint = Vector2.new(0.5, 1)
                 Drag.BackgroundTransparency = 0.8999999761581421
-                Drag.Position = UDim2.new(0.5, 0, 0.949999988079071, 0)
+                Drag.Position = UDim2.new(0.5, 0, 0.9, 0)
                 Drag.Name = 'Drag'
-                Drag.Size = UDim2.new(0, 207, 0, 4)
+                Drag.Size = UDim2.new(0, 207, 0, 6)
                 Drag.BorderSizePixel = 0
                 Drag.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Drag.Parent = Slider
@@ -1817,7 +1829,7 @@ function Library:create_ui()
                 Fill.BackgroundTransparency = 0.5
                 Fill.Position = UDim2.new(0, 0, 0.5, 0)
                 Fill.Name = 'Fill'
-                Fill.Size = UDim2.new(0, 103, 0, 4)
+                Fill.Size = UDim2.new(0, 103, 0, 6)
                 Fill.BorderSizePixel = 0
                 Fill.BackgroundColor3 = Color3.fromRGB(152, 181, 255)
                 Fill.Parent = Drag
@@ -1838,7 +1850,7 @@ function Library:create_ui()
                 Circle.Name = 'Circle'
                 Circle.Position = UDim2.new(1, 0, 0.5, 0)
                 Circle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-                Circle.Size = UDim2.new(0, 6, 0, 6)
+                Circle.Size = UDim2.new(0, 10, 0, 10)
                 Circle.BorderSizePixel = 0
                 Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 Circle.Parent = Fill
@@ -1888,7 +1900,10 @@ function Library:create_ui()
                     settings.callback(number_threshold)
                 end
 
+                local isDragging = false
+                
                 function SliderManager:update(inputPos)
+                    if not isDragging then return end
                     local position = inputPos or mouse.X
                     local mouse_position = (position - Drag.AbsolutePosition.X) / Drag.Size.X.Offset
                     local percentage = settings.minimum_value + (settings.maximum_value - settings.minimum_value) * mouse_position
@@ -1897,6 +1912,7 @@ function Library:create_ui()
                 end
 
                 function SliderManager:input()
+                    isDragging = true
                     SliderManager:update()
     
                     Connections['slider_drag_'..settings.flag] = UserInputService.InputChanged:Connect(function(input)
@@ -1910,6 +1926,7 @@ function Library:create_ui()
                             return
                         end
     
+                        isDragging = false
                         Connections:disconnect('slider_drag_'..settings.flag)
                         Connections:disconnect('slider_input_'..settings.flag)
 
@@ -2526,7 +2543,7 @@ function Library:create_ui()
         self:change_visiblity(self._ui_open)
     end)
     
-    self._ui.Container.Handler.MobileToggle.MouseButton1Click:Connect(function()
+    self._ui.MobileToggle.MouseButton1Click:Connect(function()
         self._ui_open = not self._ui_open
         self:change_visiblity(self._ui_open)
     end)
